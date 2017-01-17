@@ -1,0 +1,25 @@
+{
+  "name": "puppet-spectrumscale",
+  "version": "0.0.4",
+  "author": "aloftus",
+  "license": "BSD 3-Clause",
+  "summary": "Spectrum Scale (GPFS) support",
+  "source": "https://git.ncsa.illinois.edu/aloftus/puppet-spectrumscale.git",
+  "project_page": "https://git.ncsa.illinois.edu/aloftus/puppet-spectrumscale.git",
+  "issues_url": "https://git.ncsa.illinois.edu/aloftus/puppet-spectrumscale.git",
+  "tags": [ "gpfs", "Spectrum Scale", "SpectrumScale" ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem":"RedHat",
+      "operatingsystemrelease":[ "6.x", "7.x" ]
+    },
+    {
+      "operatingsystem":"CentOS",
+      "operatingsystemrelease":[ "6.x", "7.x" ]
+    },
+  ],
+  "dependencies": [
+    { "name": "puppetlabs-stdlib", },
+    { "name": "puppetlabs-firewall", },
+  ],
+}

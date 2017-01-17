@@ -1,0 +1,58 @@
+<%- | String $sshkey_priv_contents,
+      String $sshkey_priv_path,
+      String $gpfs_master,
+      String $client_hostname,
+      String $add_client_script_filename,
+    | -%>
+#!/bin/bash
+
+DEBUG=1
+
+FN_SSHKEY="<%= $sshkey_priv_path%>"
+/usr/bin/touch $FN_SSHKEY
+/usr/bin/chmod 600 $FN_SSHKEY
+/usr/bin/cat >$FN_SSHKEY <<< "<%= $sshkey_priv_contents %>"
+
+[[ $DEBUG -gt 0 ]] && set -x
+
+SSH="/usr/bin/ssh -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
+
+function add_firewall {
+    [[ $DEBUG -gt 0 ]] && set -x
+    mod_firewall_helper '-I INPUT 1'
+}
+
+
+function delete_firewall {
+    [[ $DEBUG -gt 0 ]] && set -x
+    mod_firewall_helper '-D INPUT'
+}
+
+function mod_firewall_helper {
+    [[ $DEBUG -gt 0 ]] && set -x
+    action="$1"
+    /sbin/iptables $action -s <%= $gpfs_master %> -m state --state NEW -j DROP
+    /sbin/iptables $action -s <%= $gpfs_master %> -m state --state ESTABLISHED -j ACCEPT
+}
+
+
+# Block incoming traffic from gpfs server
+add_firewall
+
+# Remove gpfs client node registration from server
+$SSH /usr/lpp/mmfs/bin/mmdelnode <%= $client_hostname %>
+
+# Allow incoming traffic from gpfs server
+delete_firewall
+
+# Add gpfs client node on server
+$SSH /usr/lpp/mmfs/bin/mmaddnode <%= $client_hostname %>
+
+# Accept client license
+$SSH /usr/lpp/mmfs/bin/mmchlicense client --accept -N <%= $client_hostname %>
+
+# Remove ssh key
+/usr/bin/rm -f $FN_SSHKEY
+
+# Remove this file
+/usr/bin/rm -f <%= $add_client_script_filename %>
