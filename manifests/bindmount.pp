@@ -16,8 +16,6 @@ define gpfs::bindmount(
 
     File {
         ensure => directory,
-        owner  => 'root',
-        group  => 'root',
     }
 
     # Build mount option string
@@ -27,6 +25,19 @@ define gpfs::bindmount(
     }
     else {
         $optstr = $defaultopts
+    }
+
+    # Ensure parents of target dir exist, if needed (excluding / )
+    $dirparts = reject( split( "${name}", '/' ), '^$' )
+    $numparts = size( $dirparts )
+    if ( $numparts > 1 ) {
+        each( Integer[2,$numparts] ) |$i| {
+            ensure_resource(
+                'file',
+                reduce( Integer[2,$i], $name ) |$memo, $val| { dirname( $memo ) },
+                { 'ensure' => 'directory' }
+            )
+        }
     }
 
     # Ensure target directory exists
