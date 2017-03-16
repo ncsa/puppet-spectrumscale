@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#TODO Check for open files on mountpoints (lsof) & kill associated processes
+
+GPFSBIN=/usr/lpp/mmfs/bin
+
+
+function get_gpfs_mounts() {
+    mount -t gpfs | awk '{print $3}'
+}
+
+
+function get_bindmounts() {
+    # /dev/sda1 on /boot type xfs (rw,relatime,attr2,inode64,noquota)
+    awk '
+        NR==FNR { gpfs_mounts[$1]++; next }
+        /bind/ { if ( gpfs_mounts[$2] > 0 ) { print $2 } }
+    ' <( get_gpfs_mounts ) /etc/fstab
+}
+
+
+function gpfs_off() {
+    $GPFSBIN/mmshutdown
+    for i in $(seq 1 10); do sleep 1; printf "."; done
+    printf "\n"
+    $GPFSBIN/mmgetstate
+}
+
+
+echo
+echo "GET GPFS MOUNTS"
+get_gpfs_mounts | xargs echo
+
+echo
+echo "UnMOUNT BIND MOUNTS"
+get_bindmounts | xargs -r umount
+
+echo
+echo "GET GPFS MOUNTS"
+get_gpfs_mounts | xargs echo
+
+echo
+echo "UnMOUNT ACTUAL GPFS MOUNTS"
+get_gpfs_mounts | xargs -r $GPFSBIN/mmumount
+
+echo
+echo "SHUTDOWN GPFS"
+gpfs_off
+
+echo
+echo "DONE"
