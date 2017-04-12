@@ -2,7 +2,7 @@
 ### NCSA Spectrum Scale Puppet Module (formerly GPFS)
 ###
 ### This module will install the latest version of GPFS for the specified
-### yum repository.  GPFS version is thus controlled by the repository.
+### yum repository.  GPFS version is thus controlled by yumrepo_baseurl.
 
 # Parameters: 
 #     yumrepo_baseurl - String 
@@ -35,7 +35,7 @@ class gpfs(
     ensure_packages( $gpfs::params::gpfs_pkg_list )
 
     # BUILD KERNEL MODULE
-    exec { "GPFS-${gpfs_version}-kernel-module":
+    exec { "GPFS-kernel-module":
         environment => "LINUX_DISTRIBUTION=${gpfs::params::gpl_dist}",
         command     => "mmbuildgpl",
         path        => "/usr/lpp/mmfs/bin",
