@@ -14,17 +14,17 @@ Puppet module to mount the SpectrumScale filesystem (formerly known as GPFS).
 
 # Installation
 1.  `git clone https://git.ncsa.illinois.edu/aloftus/puppet-spectrumscale.git gpfs`
-  1. **NOTE**: the local directory name **must** be *gpfs*. 
-  This is important as the contents of the puppet module refer to the module by it's legacy name, 
-  *gpfs*.
+    1. **NOTE**: the local directory name **must** be *gpfs*. 
+    This is important as the contents of the puppet module refer to the module by it's legacy name, 
+    *gpfs*.
 1. On the gpfs master node:
-  1. Create an ssh public and private key pair
-  1. Add the ssh public key to */root/.ssh/authorized_keys*
-  1. In */root/.ssh/config*, create a *Host* section to match all new client hostnames:
-      1. Set `IdentityFile` to the private key created above
-      1. Set `StrictHostKeyChecking no`
+    1. Create an ssh public and private key pair
+    1. Add the ssh public key to */root/.ssh/authorized_keys*
+    1. In */root/.ssh/config*, create a *Host* section to match all new client hostnames:
+        1. Set `IdentityFile` to the private key created above
+        1. Set `StrictHostKeyChecking no`
 1. On the gpfs client nodes, ensure passwordless ssh login as root is allowed:
-  1. This usually entails the following settings in */etc/ssh/sshd_config* on each client, usually in a *Match Address* section:
+    1. This usually entails the following settings in */etc/ssh/sshd_config* on each client, usually in a *Match Address* section:
 ```
 PermitRootLogin without-password
 AllowGroups root
@@ -32,7 +32,8 @@ PubkeyAuthentication yes
 PasswordAuthentication no
 GSSAPIAuthentication no
 ```
-  1. **NOTE** The gpfs puppet module will adjust */root/.ssh/authorized_keys* on each client as well as make appropriate firewall changes.
+
+**NOTE** The gpfs puppet module will adjust */root/.ssh/authorized_keys* on each client as well as make appropriate firewall changes.
 
 # Usage
 The following are required parameters:
