@@ -37,31 +37,35 @@ GSSAPIAuthentication no
 
 # Usage
 The following are required parameters:
-* gpfs
-    * `firewall_allowed_cidr` (STRING)
-        * A network address in CIDR format that encompasses all nodes that will be
-        part of the cluster.  This is used to create a firewall exception
-        allowing incoming traffic from this CIDR to GPFS ports.
-    * `yumrepo_baseurl` (STRING)
-        * The baseurl of the yum repo from which to install gpfs modules.
-        Use this to control which version of gpfs is installed.
-* gpfs::add_client
-    * `master_server` (STRING)
-        * Fully qualified domain name of the gpfs master server
-    * `sshkey_priv_contents`
-        * The contents of the private ssh key created above.
-        Used only to ssh to the master server during setup (ie: addclient,
-        chlicense).  After setup, the private key is destroyed from the client node.
-    * `sshkey_pub_contents`
-        * The contents of the public ssh key created above.  Added to root
-        authorized keys file on each client to allow passwordless ssh from the
-        master.
+* `gpfs::firewall::allowed_cidr` (STRING)
+    * A network address in CIDR format that encompasses all nodes that will be
+      part of the cluster.  This is used to create a firewall exception
+      allowing incoming traffic from this CIDR to GPFS ports.
+* `gpfs::install::yumrepo_baseurl` (STRING)
+    * The baseurl of the yum repo from which to install gpfs modules.
+      Use this to control which version of gpfs is installed.
+* `gpfs::add_client::master_server` (STRING)
+    * Fully qualified domain name of the gpfs master server
+* `gpfs::add_client::sshkey_priv_contents` (STRING)
+    * The contents of the private ssh key created above.
+      Used only to ssh to the master server during setup (ie: addclient,
+      chlicense).  After setup, the private key is destroyed from the client node.
+* `gpfs::add_client::sshkey_pub_contents` (STRING)
+    * The contents of the public ssh key created above.  Added to root
+      authorized keys file on each client to allow passwordless ssh from the
+      master.
+* `gpfs::quota::host` (STRING)
+    * host name or ip-address of a gpfs core server that listens for mmlsquota
+      requests from the network
+* `gpfs::quota::port` (INTEGER)
+    * port (on the host above) to which remote mmlsquota requests should be
+      sent
 
 ## Hiera Example
 In the appropropriate YAML file(s), define the following keys:
 ```
-gpfs::firewall_allowed_cidr: 111.222.0.0/16
-gpfs::yumrepo_baseurl: http://rh.my.company/rhelrepos/SpectrumScale_420-client
+gpfs::firewall::allowed_cidr: 111.222.0.0/16
+gpfs::install::yumrepo_baseurl: http://rh.my.company/rhelrepos/SpectrumScale_420-client
 gpfs::add_client::master_server: gpfs00.my.company
 gpfs::add_client::sshkey_priv_contents: |
   -----BEGIN RSA PRIVATE KEY-----
@@ -70,13 +74,23 @@ gpfs::add_client::sshkey_priv_contents: |
   321zyxgfedcba
   -----END RSA PRIVATE KEY-----
 gpfs::add_client::sshkey_pub_contents: AAAAB3NzaC1yc2EAAAADAQABAAABAQDjCJxNeh+sgZ4HeaF6TrDf6QD0SfZ//ZvdEOoyb5cBMS7hqPBuDbwMtpI9+80sCmtwTVLW0S09e8oG+2q68LNZxXBjIDr9b4n6GnUIxphTtVxkG8AIbvmVhD1QzoeGEMVQlpFKsHyJoWYyg5PDFdgpcpxNdue0CcLjSNDe1hXnUmOCwLjBvXkDkf2ROmdGRD3e+7HEXlesfIreXxuMTwcDK/2Q8XoB7EHgL5APm1GzrISE7Pd15ShED4klF+uivbs0B/V6fNdF0BmYjB7AqY+W7jCP6T1MrsJgLYIQiJfa7vb2Gmd7E39N3HyZiUKex0Sey3h1ld96zRcIeeEguPkx
+gpfs::quota::host: 111.222.3.4
+gpfs::quota::port: 9876
 ```
 
 ## Declarative Example
 ```
-class { 'gpfs' :
-    firewall_allowed_cidr => '111.222.0.0/16',
+class { 'gpfs::firewall' :
+    allowed_cidr => '111.222.0.0/16',
+}
+
+class { 'gpfs::install' :
     yumrepo_baseurl => 'http://rh.my.company/rhelrepos/SpectrumScale_420',
+}
+
+class { 'gpfs::quota' :
+    host => '111.222.3.4',
+    port => 9876,
 }
 
 ### Add node to GPFS cluster and start GPFS

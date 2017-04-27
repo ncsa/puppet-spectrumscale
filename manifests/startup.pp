@@ -5,13 +5,13 @@ class gpfs::startup inherits gpfs::params {
         command   => 'mmstartup',
         user      => root,
         logoutput => true,
-        unless    => $mmgetstate_cmd,
+        unless    => $::gpfs::params::mmgetstate_cmd,
         notify    => Exec[ 'mmgetstate' ]
     }
 
     # WAIT FOR GPFS STATE TO BECOME ACTIVE (mmgetstate | grep active | wc -l)
     exec { 'mmgetstate':
-        command   => $mmgetstate_cmd,
+        command   => $::gpfs::params::mmgetstate_cmd,
         user      => root,
         tries     => 4,
         try_sleep => 10,

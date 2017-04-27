@@ -1,0 +1,35 @@
+<%- | String $host,
+      Integer $port
+| -%>
+#!/usr/bin/ruby
+
+require 'rubygems'
+require 'socket'
+require 'yaml'
+
+$prog = File.basename($0).upcase
+$useropt = ''
+
+ARGV.each do |arg|
+  $useropt += arg
+  $useropt += ' '
+end
+
+begin
+   $sock = TCPSocket.new '<%= $host %>', <%= $port %>
+rescue
+   puts("Quota server not running.")
+   exit
+end
+
+$sock.puts("#{$prog},#{$useropt}")
+loop {
+   mydata = $sock.gets().rstrip
+   if mydata == "DONE"
+      break
+      $sock.close
+      exit
+   else
+      puts("#{mydata}")
+   end
+}

@@ -37,7 +37,7 @@ inherits gpfs::params
             command   => "${add_client_script_filename} ${master_server}",
             user      => 'root',
             logoutput => true,
-            creates   => $mmsdrfs,
+            creates   => $::gpfs::params::mmsdrfs,
             require   => [ File[ $add_client_script_filename ],
                            Class[ 'gpfs' ],
                          ],
@@ -73,7 +73,7 @@ inherits gpfs::params
     # add client bash script writes sshkey_priv_contents to a local file and,
     # if all goes well, it will remove the file when it's done.
     # This resource is just a backup in case the script doesn't run to completion.
-    file { $sshkey_priv_path:
+    file { $::gpfs::params::sshkey_priv_path:
         ensure => absent,
     }
 
