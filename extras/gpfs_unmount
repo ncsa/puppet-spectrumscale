@@ -11,7 +11,6 @@ function get_gpfs_mounts() {
 
 
 function get_bindmounts() {
-    # /dev/sda1 on /boot type xfs (rw,relatime,attr2,inode64,noquota)
     awk '
         NR==FNR { gpfs_mounts[$1]++; next }
         /bind/ { if ( gpfs_mounts[$2] > 0 ) { print $2 } }
@@ -27,21 +26,41 @@ function gpfs_off() {
 }
 
 
+# Attempt to unmount all bind mounts
+# Sometimes, multiple bind mounts are present, keep looking until mount count == 1
+# or mount count doesn't change after 2 attempts (and exit with an error)
 echo
-echo "GET GPFS MOUNTS"
-get_gpfs_mounts | xargs echo
+echo "GPFS MOUNTS"
+mounts_curr=( $( get_gpfs_mounts ) )
+echo "${mounts_curr[@]}"
+repeat_attempts=0
+while [[ ${#mounts_curr[*]} -gt 1 ]] ; do
+    echo "Attempt to unmount '${#mounts_curr[*]}' bind mounts"
+    get_bindmounts | xargs -r /bin/umount
+    prev_mcount=${#mounts_curr[*]}
+    mounts_curr=( $( get_gpfs_mounts ) )
+    echo "Current gpfs mounts: '${mounts_curr[@]}'"
+    echo "Current gpfs mount count: '${#mounts_curr[*]}'"
+    if [[ ${#mounts_curr[*]} -lt $prev_mcount ]] ; then
+        echo "resetting attempts counter"
+        repeat_attempts=0
+    else
+        echo "mount count didn't decrease, trying again"
+        let "repeat_attempts+=1"
+    fi
+    if [[ $repeat_attempts -ge 2 ]] ; then
+        echo "ERROR: Unable to unmount some bind mounts" >&2
+        exit 1
+    fi
+done
 
-echo
-echo "UnMOUNT BIND MOUNTS"
-get_bindmounts | xargs -r umount
-
-echo
-echo "GET GPFS MOUNTS"
-get_gpfs_mounts | xargs echo
-
-echo
-echo "UnMOUNT ACTUAL GPFS MOUNTS"
-get_gpfs_mounts | xargs -r $GPFSBIN/mmumount
+#echo
+#echo "GET GPFS MOUNTS"
+#get_gpfs_mounts | xargs echo
+#
+#echo
+#echo "UnMOUNT ACTUAL GPFS MOUNTS"
+#get_gpfs_mounts | xargs -r $GPFSBIN/mmumount
 
 echo
 echo "SHUTDOWN GPFS"
