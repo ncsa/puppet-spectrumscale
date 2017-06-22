@@ -29,9 +29,13 @@ function gpfs_off() {
 # Attempt to unmount all bind mounts
 # Sometimes, multiple bind mounts are present, keep looking until mount count == 1
 # or mount count doesn't change after 2 attempts (and exit with an error)
+mounts_curr=( $( get_gpfs_mounts ) )
+if [[ ${#mounts_curr[*]} -lt 1 ]] ; then
+    echo "No GPFS mounts found. Exiting."
+    exit 0
+fi
 echo
 echo "GPFS MOUNTS"
-mounts_curr=( $( get_gpfs_mounts ) )
 echo "${mounts_curr[@]}"
 repeat_attempts=0
 while [[ ${#mounts_curr[*]} -gt 1 ]] ; do
