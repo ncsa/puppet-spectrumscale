@@ -16,8 +16,9 @@ class gpfs::install(
 
 
     # GPFS profile.d PATH SCRIPT
-    file { "/etc/profile.d/gpfs.sh":
-        source   => "puppet:///modules/gpfs/gpfs.sh",
+    $fn_gpfs_profile = '/etc/profile.d/gpfs.sh'
+    file { $fn_gpfs_profile :
+        source   => "puppet:///modules/gpfs/${fn_gpfs_profile}",
     }
 
   
