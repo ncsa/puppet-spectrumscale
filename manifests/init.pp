@@ -11,5 +11,6 @@ class gpfs {
     include gpfs::quota
     include gpfs::startup
     include gpfs::add_client
+    include gpfs::cron
 
 }
