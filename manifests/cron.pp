@@ -19,12 +19,14 @@ class gpfs::cron (
     $root_cron       = '/root/cron'
     $fn_gpfs_oom     = "${root_cron}/gpfs_oom.sh"
     $fn_gpfs_license = "${root_cron}/gpfs_license.sh"
-#    $fn_crontab      = '/etc/cron.d/gpfs'
 
     # CRON DIRECTORY
-    file { $root_cron :
-        ensure   => 'directory',
-    }
+    ensure_resource( 'file', $root_cron, { ensure => 'directory',
+                                           owner  => 'root',
+                                           group  => 'root',
+                                           mode   => '0700',
+                                         }
+    )
 
     # EXEMPT GPFS FROM OOM KILLER
     file { $fn_gpfs_oom :
