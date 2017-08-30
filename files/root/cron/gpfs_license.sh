@@ -3,15 +3,15 @@
 #set -x
 
 nodelist="$(
-mmlslicense -Y \
-| awk -F ':' '
+/usr/lpp/mmfs/bin/mmlslicense -Y \
+| /bin/awk -F ':' '
   $3 ~ /HEADER/ { next }
   $9 ~ /none/ { printf( "%s,", $7 ) }
   END { printf( "\n" ) }
 ' \
-| sed -e 's/,$//' )"
+| /bin/sed -e 's/,$//' )"
 
-[[ -n $nodelist ]] && mmchlicense client --accept -N $nodelist
+[[ -n $nodelist ]] && /usr/lpp/mmfs/bin/mmchlicense client --accept -N $nodelist
 
 #1           23      4       5        6        7        8               9                 10         11              12              13                14                15
 #mmlslicense::HEADER:version:reserved:reserved:nodeName:requiredLicense:designatedLicense:totalNodes:licensedServers:l
