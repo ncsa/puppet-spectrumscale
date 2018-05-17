@@ -1,16 +1,48 @@
 #!/bin/bash
 
-#TODO Check for open files on mountpoints (lsof) & kill associated processes
-
+#DEBUG=1
 GPFSBIN=/usr/lpp/mmfs/bin
+GPFSCONF=/var/mmfs/etc
+
+
+function die() {
+    echo "ERROR: $*" 1>&2
+    exit 99
+}
+
+
+function debug() {
+    [[ $DEBUG -eq 1 ]] || return 0
+    echo "DEBUG: $*"
+}
+
+
+function is_gpfs_installed() {
+    [[ $DEBUG -eq 1 ]] && set -x
+    [[ -d $GPFSBIN ]]
+}
+
+
+function is_gpfs_running() {
+    [[ $DEBUG -eq 1 ]] && set -x
+    $GPFSBIN/mmgetstate | grep $HOSTNAME | grep -q active
+}
+
+
+function is_gpfs_stopped() {
+    [[ $DEBUG -eq 1 ]] && set -x
+    $GPFSBIN/mmgetstate | grep $HOSTNAME | grep -q down
+}
 
 
 function get_gpfs_mounts() {
+    [[ $DEBUG -eq 1 ]] && set -x
     mount -t gpfs | awk '{print $3}'
 }
 
 
 function get_bindmounts() {
+    [[ $DEBUG -eq 1 ]] && set -x
     awk '
         NR==FNR { gpfs_mounts[$1]++; next }
         /bind/ { if ( gpfs_mounts[$2] > 0 ) { print $2 } }
@@ -19,56 +51,126 @@ function get_bindmounts() {
 
 
 function gpfs_off() {
+    # Attempt to turn off / shutdown gpfs
+    # This will unmount all native gpfs mounts (but not bindmounts)
+    # Return 0 on success, non-zero otherwise
+    [[ $DEBUG -eq 1 ]] && set -x
     $GPFSBIN/mmshutdown
-    for i in $(seq 1 10); do sleep 1; printf "."; done
-    printf "\n"
-    $GPFSBIN/mmgetstate
+    sleep 10
+    is_gpfs_stopped
 }
 
 
-# Attempt to unmount all bind mounts
-# Sometimes, multiple bind mounts are present, keep looking until mount count == 1
-# or mount count doesn't change after 2 attempts (and exit with an error)
-mounts_curr=( $( get_gpfs_mounts ) )
-if [[ ${#mounts_curr[*]} -lt 1 ]] ; then
-    echo "No GPFS mounts found. Exiting."
+function ls_procs() {
+    # List all unique process IDs that are accessing files on any gpfs mountpoint
+    [[ $DEBUG -eq 1 ]] && set -x
+    get_gpfs_mounts | xargs -r -n1 lsof -t | sort -ur
+}
+
+
+function kill_procs() {
+    # Attempt to kill processes accessing files on gpfs
+    [[ $DEBUG -eq 1 ]] && set -x
+
+    #try HUP first
+    ls_procs | xargs -r kill
+    [[ $( ls_procs | wc -l ) -gt 0 ]] && sleep 5
+
+    #if anything left, send KILL
+    ls_procs | xargs -r kill -9
+    [[ $( ls_procs | wc -l ) -gt 0 ]] && sleep 5
+
+    #return 0 if no procs remain, non-zero otherwise
+    return $( ls_procs | wc -l )
+}
+
+
+function rm_kernel_modules() {
+    [[ $DEBUG -eq 1 ]] && set -x
+    searchpaths=( {/usr,}/lib/modules )
+    for path in "${searchpaths[@]}"; do
+        find $path -xdev -type f -name 'mmfs*.ko' -delete
+    done
+    kmod_count=$(
+        for path in "${searchpaths[@]}"; do
+            find $path -xdev -type f -name 'mmfs*.ko'
+        done | wc -l
+    )
+    return $kmod_count
+}
+
+
+## WARNING - THIS IS LSST SPECIFIC
+## This functionality needs to move to
+## https://github.com/ncsa/puppet-spectrumscale
+## nosuid is separate from gpfs_unmount
+function set_nosuid() {
+    # 2018.05.11: configure nosuid for the lsst filesystem specifically and
+    # all filesystems generally
+    # - will be active the next time a/the filesystem is remounted
+    # - does not affect bindmounts, which we handle with Puppet
+    [[ -d "$GPFSCONF" ]] || mkdir -p "$GPFSCONF"
+    echo -n nosuid>"$GPFSCONF/localMountOptions.lsst"
+    echo -n nosuid>"$GPFSCONF/localMountOptions"
+}
+
+
+[[ $DEBUG -eq 1 ]] && set -x
+
+# Exit quickly if no GPFS
+is_gpfs_installed || {
+    echo "GPFS not found. Exiting."
     exit 0
-fi
-echo
-echo "GPFS MOUNTS"
-echo "${mounts_curr[@]}"
-repeat_attempts=0
-while [[ ${#mounts_curr[*]} -gt 1 ]] ; do
-    echo "Attempt to unmount '${#mounts_curr[*]}' bind mounts"
-    get_bindmounts | xargs -r /bin/umount
-    prev_mcount=${#mounts_curr[*]}
+}
+
+
+
+## TODO - remove this call once the functionality is moved to puppet module
+set_nosuid
+
+
+
+if is_gpfs_running; then
+
+    # Kill any processes still using files in GPFS
+#   ls_procs
+    kill_procs || die "Filesystem still busy. Attempt to kill processes was unsuccessful"
+#   echo kill is done
+#   echo ls_procs...
+#   ls_procs
+#   exit 1
+
+    # Attempt to unmount all bind mounts
+    # Sometimes, multiple bind mounts are present, keep looking until mount count == 1
+    # If mount count doesn't change after 2 attempts, exit with an error
     mounts_curr=( $( get_gpfs_mounts ) )
-    echo "Current gpfs mounts: '${mounts_curr[@]}'"
-    echo "Current gpfs mount count: '${#mounts_curr[*]}'"
-    if [[ ${#mounts_curr[*]} -lt $prev_mcount ]] ; then
-        echo "resetting attempts counter"
-        repeat_attempts=0
-    else
-        echo "mount count didn't decrease, trying again"
-        let "repeat_attempts+=1"
-    fi
-    if [[ $repeat_attempts -ge 2 ]] ; then
-        echo "ERROR: Unable to unmount some bind mounts" >&2
-        exit 1
-    fi
-done
+    debug "GPFS MOUNTS"
+    debug "${mounts_curr[@]}"
+    repeat_attempts=0
+    while [[ ${#mounts_curr[*]} -gt 1 ]] ; do
+        debug "Attempt to unmount '${#mounts_curr[*]}' bind mounts"
+        get_bindmounts | xargs -r /bin/umount
+        prev_mcount=${#mounts_curr[*]}
+        mounts_curr=( $( get_gpfs_mounts ) )
+        debug "Current gpfs mounts: '${mounts_curr[@]}'"
+        debug "Current gpfs mount count: '${#mounts_curr[*]}'"
+        if [[ ${#mounts_curr[*]} -lt $prev_mcount ]] ; then
+            debug "resetting attempts counter"
+            repeat_attempts=0
+        else
+            debug "mount count didn't decrease, trying again"
+            let "repeat_attempts+=1"
+        fi
+        [[ $repeat_attempts -ge 2 ]] && die "Unable to unmount some bind mounts"
+    done
 
-#echo
-#echo "GET GPFS MOUNTS"
-#get_gpfs_mounts | xargs echo
-#
-#echo
-#echo "UnMOUNT ACTUAL GPFS MOUNTS"
-#get_gpfs_mounts | xargs -r $GPFSBIN/mmumount
+    debug "SHUTDOWN GPFS"
+    gpfs_off || die "GPFS shutdown was unsuccessful"
 
-echo
-echo "SHUTDOWN GPFS"
-gpfs_off
+fi
 
-echo
-echo "DONE"
+# Remove kernel modules
+# Sometimes existing kernel modules will hinder RPM updates
+# Also, this will force new kernel modules to be built in case of GPFS client
+# version updates
+rm_kernel_modules || die "while trying to remove GPFS kernel modules"
