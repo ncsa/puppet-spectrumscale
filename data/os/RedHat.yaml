@@ -1,0 +1,11 @@
+---
+gpl_dist: REDHAT_AS_LINUX
+gpfs_pkg_list:
+    - kernel-devel
+    - libstdc++
+    - gpfs.base
+    - gpfs.gpl
+    - gpfs.docs
+    - gpfs.msg.en_US
+    - gpfs.ext
+    - gpfs.gskit
