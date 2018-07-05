@@ -1,19 +1,14 @@
+###
+#  Install cron jobs for:
+#    - Exempt gpfs from linux kernel OOM killer
+#    - (OPTIONAL) accept license for all nodes in cluster
+#
 # Parameters: 
 #     accept_license - Boolean - install cron script to auto accept license
+###
 class gpfs::cron (
     Boolean $accept_license,
 ) {
-
-    # RESOURCE DEFAULTS
-    File {
-        owner    => 'root',
-        group    => 'root',
-        mode     => '0700',
-    }
-    Cron {
-        user    => 'root',
-        ensure  => present,
-    }
 
     # CRON FILE LOCATIONS
     $root_cron       = '/root/cron'
@@ -29,14 +24,24 @@ class gpfs::cron (
     )
 
     # EXEMPT GPFS FROM OOM KILLER
-    file { $fn_gpfs_oom :
-        ensure  => present,
-        source  => "puppet:///modules/gpfs${fn_gpfs_oom}"
+    file {
+        $fn_gpfs_oom :
+            source  => "puppet:///modules/gpfs${fn_gpfs_oom}"
+        ;
+        default:
+            * => $gpfs::resource_defaults['file']
+        ;
     }
-    cron { 'gpfs_oom' :
-        command => $fn_gpfs_oom,
-        hour    => 0,
-        minute  => 2,
+    cron {
+        'gpfs_oom' :
+            ensure  => present,
+            command => $fn_gpfs_oom,
+            hour    => 0,
+            minute  => 2,
+        ;
+        default:
+            * => $gpfs::resource_defaults['cron']
+        ;
     }
 
     # CHECK & ACCEPT LICENSE FEATURE IS OPTIONAL
@@ -46,14 +51,24 @@ class gpfs::cron (
     else {
         $license_ensure = 'absent'
     }
-    file { $fn_gpfs_license :
-        ensure   => $license_ensure,
-        source   => "puppet:///modules/gpfs${fn_gpfs_license}",
+    file {
+        $fn_gpfs_license :
+            ensure => $license_ensure,
+            source => "puppet:///modules/gpfs${fn_gpfs_license}",
+        ;
+        default:
+            * => $gpfs::resource_defaults['file']
+        ;
     }
-    cron { 'gpfs_license' :
-        command  => $fn_gpfs_license,
-        ensure   => $license_ensure,
-        hour     => 0,
-        minute   => 1,
+    cron {
+        'gpfs_license' :
+            ensure  => $license_ensure,
+            command => $fn_gpfs_license,
+            hour    => 0,
+            minute  => 1,
+        ;
+        default:
+            * => $gpfs::resource_defaults['cron']
+        ;
     }
 }

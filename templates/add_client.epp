@@ -1,17 +1,17 @@
-<%- | String $sshkey_priv_contents,
-      String $sshkey_priv_path,
+<%- | String $ssh_private_key_contents,
+      String $ssh_private_key_path,
       String $gpfs_master,
       String $client_hostname,
-      String $add_client_script_filename,
+      String $script_fn,
     | -%>
 #!/bin/bash
 
 DEBUG=1
 
-FN_SSHKEY="<%= $sshkey_priv_path%>"
+FN_SSHKEY="<%= $ssh_private_key_path%>"
 /usr/bin/touch $FN_SSHKEY
 /usr/bin/chmod 600 $FN_SSHKEY
-/usr/bin/cat >$FN_SSHKEY <<< "<%= $sshkey_priv_contents %>"
+/usr/bin/cat >$FN_SSHKEY <<< "<%= $ssh_private_key_contents %>"
 
 [[ $DEBUG -gt 0 ]] && set -x
 
@@ -55,4 +55,4 @@ $SSH /usr/lpp/mmfs/bin/mmchlicense client --accept -N <%= $client_hostname %>
 /usr/bin/rm -f $FN_SSHKEY
 
 # Remove this file
-/usr/bin/rm -f <%= $add_client_script_filename %>
+/usr/bin/rm -f <%= $script_fn %>

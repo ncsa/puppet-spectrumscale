@@ -1,1 +1,33 @@
 ---
+gpfs::add_client::mmsdrfs: /var/mmfs/gen/mmsdrfs
+gpfs::add_client::sshkey_priv_path: /root/.ssh/id_gpfs
+gpfs::add_client::script_tgt_fn: /root/gpfs_add_client.sh
+gpfs::resource_defaults:
+    cron:
+        user: root
+        minute: 0
+        hour: absent
+        monthday: absent
+        month: absent
+        weekday: absent
+        environment:
+            - DATE=date +%y%m%d_%H%M%S
+    exec:
+        path:
+            - /bin
+            - /sbin
+            - /usr/bin
+            - /usr/sbin
+            - /usr/lpp/mmfs/bin
+    file:
+        ensure: present
+        owner: root
+        group: root
+        mode: '0744'
+    yumrepo:
+        descr: Puppet Spectrum Scale
+        enabled: 1
+        gpgcheck: 0
+gpfs::startup::cmds:
+    is_gpfs_mounted: test $( mount -t gpfs | wc -l ) -gt 0
+    mmgetstate: test $( mmgetstate | grep active | wc -l ) -gt 0

@@ -1,5 +1,5 @@
-<%- | String $host,
-      Integer $port
+<%- | String[1]         $host,
+      Integer[1, 65535] $port
 | -%>
 #!/usr/bin/ruby
 

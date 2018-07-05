@@ -1,6 +1,6 @@
 ---
-gpl_dist: REDHAT_AS_LINUX
-gpfs_pkg_list:
+gpfs::install::gpl_dist: REDHAT_AS_LINUX
+gpfs::install::pkg_list:
     - kernel-devel
     - libstdc++
     - gpfs.base

@@ -19,7 +19,7 @@ define gpfs::bindmount(
     }
 
     # Build mount option string
-    $defaultopts = "bind,noauto"
+    $defaultopts = 'bind,noauto'
     if $opts =~ String[2] {
         $optstr = "${defaultopts},${opts}"
     }
@@ -28,7 +28,7 @@ define gpfs::bindmount(
     }
 
     # Ensure parents of target dir exist, if needed (excluding / )
-    $dirparts = reject( split( "${name}", '/' ), '^$' )
+    $dirparts = reject( split( $name, '/' ), '^$' )
     $numparts = size( $dirparts )
     if ( $numparts > 1 ) {
         each( Integer[2,$numparts] ) |$i| {
@@ -49,7 +49,7 @@ define gpfs::bindmount(
     }
 
     # Define the mount point
-    mount{ $name:
+    mount { $name:
         device  => $src,
         options => $optstr,
         require => File[ $name, $src ],
