@@ -10,47 +10,31 @@ class gpfs::startup(
 )
 {
 
-    # START GPFS
     exec {
+        # START GPFS
         'mmstartup':
-            command   => 'mmstartup',
-            user      => root,
-            logoutput => true,
-            unless    => $cmds[ 'mmgetstate' ],
-            notify    => Exec[ 'mmgetstate' ],
+            command => 'mmstartup',
+            unless  => $cmds[ 'mmgetstate' ],
+            notify  => Exec[ 'mmgetstate' ],
         ;
-        default:
-            * => $gpfs::resource_defaults['exec'],
-        ;
-    }
 
-    # WAIT FOR GPFS STATE TO BECOME ACTIVE (mmgetstate | grep active | wc -l)
-    exec {
+        # WAIT FOR GPFS STATE TO BECOME ACTIVE (mmgetstate | grep active | wc -l)
         'mmgetstate':
             command     => $cmds[ 'mmgetstate' ],
-            user        => root,
             tries       => 4,
             try_sleep   => 10,
-            logoutput   => true,
             refreshonly => true,
             notify      => Exec[ 'wait_for_gpfs_mount' ],
         ;
-        default:
-            * => $gpfs::resource_defaults['exec'],
-        ;
-    }
 
-
-    # WAIT FOR GPFS FILESYSTEMS TO BE MOUNTED
-    exec {
+        # WAIT FOR GPFS FILESYSTEMS TO BE MOUNTED
         'wait_for_gpfs_mount':
             command     => $cmds[ 'is_gpfs_mounted' ],
-            user        => root,
             tries       => 4,
             try_sleep   => 10,
-            logoutput   => true,
             refreshonly => true,
         ;
+
         default:
             * => $gpfs::resource_defaults['exec'],
         ;

@@ -14,9 +14,19 @@ class gpfs::install(
     Array[String[1], 1] $pkg_list,
 )
 {
-    # INSTALL THE YUM REPO FILE (if provided)
+
+#    notify {
+#        "yumrepo_baseurl='${yumrepo_baseurl}'":
+#            withpath => true,
+#    }
+
+
+
+    # INSTALL THE YUM REPO (if provided)
     if $yumrepo_baseurl =~ String[1] {
+        notify { 'yumrepo_baseurl is set, about to setup yumrepo': }
         yumrepo { 'puppet-gpfs':
+            ensure   => present,
             baseurl  => $yumrepo_baseurl,
             descr    => 'Puppet Spectrum Scale',
             enabled  => 1,
@@ -46,9 +56,6 @@ class gpfs::install(
         'GPFS-kernel-module':
             environment => "LINUX_DISTRIBUTION=${gpl_dist}",
             command     => 'mmbuildgpl',
-            path        => '/usr/lpp/mmfs/bin',
-            user        => 'root',
-            logoutput   => true,
             creates     => "/lib/modules/${facts['kernelrelease']}/extra/mmfs26.ko",
             require     => Package[ $pkg_list ],
         ;

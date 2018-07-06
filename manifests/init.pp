@@ -10,7 +10,7 @@
 ###
 
 class gpfs(
-    Hash[String[1], default, 1] $resource_defaults,
+    Hash[String[1], Hash[String[1], Data, 1], 1] $resource_defaults,
 )
 {
 

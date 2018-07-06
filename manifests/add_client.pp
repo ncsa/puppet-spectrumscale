@@ -55,16 +55,14 @@ class gpfs::add_client(
         # EXECUTE ADD CLIENT SCRIPT
         exec {
             'gpfs_add_client':
-                command   => "${script_tgt_fn} ${master_server}",
-                user      => 'root',
-                logoutput => true,
-                creates   => $mmsdrfs,
-                require   => [ File[ $script_tgt_fn ],
-                               Class[ 'gpfs' ],
-                             ],
-                notify    => [ Class[ 'gpfs::startup' ],
-                               Exec[ 'rm_gpfs_add_client_sh' ],
-                             ],
+                command => "${script_tgt_fn} ${master_server}",
+                creates => $mmsdrfs,
+                require => [ File[ $script_tgt_fn ],
+                             Class[ 'gpfs' ],
+                           ],
+                notify  => [ Class[ 'gpfs::startup' ],
+                             Exec[ 'rm_gpfs_add_client_sh' ],
+                           ],
             ;
             default:
                 * => $gpfs::resource_defaults['exec']
@@ -74,7 +72,6 @@ class gpfs::add_client(
         exec {
             'rm_gpfs_add_client_sh':
                 command => "/bin/rm -f ${script_tgt_fn}",
-                user    => 'root',
                 require => File[ $script_tgt_fn ],
             ;
             default:

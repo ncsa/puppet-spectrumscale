@@ -9,14 +9,10 @@ define gpfs::bindmount(
 #    notify {"gpfs::bindmount ${name}":}
 
     # Resource defaults
-    Mount {
-        ensure  => mounted,
-        fstype   => 'none',
-    }
+    $resource_defaults = lookup( 'gpfs::resource_defaults' )
+    $mount_defaults = $resource_defaults['mount']
+    $dir_defaults = merge( $resource_defaults['file'], { 'ensure'=>'directory' } )
 
-    File {
-        ensure => directory,
-    }
 
     # Build mount option string
     $defaultopts = 'bind,noauto'
@@ -27,6 +23,7 @@ define gpfs::bindmount(
         $optstr = $defaultopts
     }
 
+
     # Ensure parents of target dir exist, if needed (excluding / )
     $dirparts = reject( split( $name, '/' ), '^$' )
     $numparts = size( $dirparts )
@@ -35,24 +32,32 @@ define gpfs::bindmount(
             ensure_resource(
                 'file',
                 reduce( Integer[2,$i], $name ) |$memo, $val| { dirname( $memo ) },
-                { 'ensure' => 'directory' }
+                $dir_defaults
             )
         }
     }
 
-    # Ensure target directory exists
-    file { $name: }
 
-    # Ensure source directory exists (ie: gpfs is started and mounted)
-    file { $src:
-        require => Class[ 'gpfs::startup' ],
+    file {
+        # Ensure target directory exists
+        $name:
+        ;
+        # Ensure source directory exists (ie: gpfs is started and mounted)
+        $src:
+            require => Class[ 'gpfs::startup' ],
+        ;
+        default: * => $dir_defaults ;
     }
 
+
     # Define the mount point
-    mount { $name:
-        device  => $src,
-        options => $optstr,
-        require => File[ $name, $src ],
+    mount {
+        $name:
+            device  => $src,
+            options => $optstr,
+            require => File[ $name, $src ],
+        ;
+        default: * => $mount_defaults ;
     }
 
 }

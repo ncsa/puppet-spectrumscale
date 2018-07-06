@@ -5,7 +5,7 @@ define gpfs::ignoremount {
 ### gpfs::ignore_mount{"scratch": } 
 ### 
     file { "/var/mmfs/etc/ignoreAnyMount.${name}":,
-       source   => "puppet:///modules/gpfs/ignoreAnyMount",
-       require  => Class['gpfs'],
+       source  => 'puppet:///modules/gpfs/ignoreAnyMount',
+       require => Class['gpfs'],
     }
 }

@@ -23,16 +23,14 @@ class gpfs::firewall(
         # merged set of params for each firewall definition below
         $fw_parms = merge( $common_parms, { $key => $ip_src } )
 
-        # Port 1191
-        firewall { '100 gpfs 1191':
-            dport => 1191,
-            *     => $fw_parms,
-        }
-
-        # Ports in the 30K range
-        firewall { '100 gpfs 30K range':
-            dport => '30000-30100',
-            *     => $fw_parms,
+        # Open firewall ports
+        each( ['1191', '30000-30100'] ) |$dport| {
+            firewall {
+                "100 gpfs ${dport} allow from ${ip_src}":
+                    dport => $dport,
+                    *     => $fw_parms
+                ;
+            }
         }
     }
 }

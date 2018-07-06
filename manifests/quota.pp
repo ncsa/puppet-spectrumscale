@@ -9,8 +9,13 @@ class gpfs::quota (
 ) {
 
     $myquota = '/usr/local/bin/myquota'
+    $symlinks = ['/usr/local/bin/mmlsquota', '/usr/local/bin/mmrepquota']
 
     file {
+        $symlinks:
+            ensure => link,
+            target => $myquota,
+        ;
         $myquota :
             content => epp( 'gpfs/myquota.epp', {
                 'host' => $host,
@@ -22,16 +27,6 @@ class gpfs::quota (
         default:
             * => $gpfs::resource_defaults['file']
         ;
-    }
-
-    file { '/usr/local/bin/mmlsquota' :
-        ensure => link,
-        target => $myquota,
-    }
-
-    file { '/usr/local/bin/mmrepquota' :
-        ensure => link,
-        target => $myquota,
     }
 
 }
