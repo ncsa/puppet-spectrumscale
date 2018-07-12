@@ -35,3 +35,7 @@ gpfs::startup::cmds:
 # Build kernel module if mmfs26.ko doesn't exist
 # Re-build kernel module if new gpfs rpm pkgs have been installed
 gpfs::install::kernel_module_build_only_if: test $(rpm -q --qf '%-{installtime}' gpfs.base) -gt $(stat -c %Y /lib/modules/$(uname -r)/extra/mmfs26.ko 2>/dev/null || echo 0)
+
+lookup_options:
+    gpfs::(.*)::mountmap:
+        merge: hash
