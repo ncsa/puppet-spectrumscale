@@ -2,6 +2,7 @@
 gpfs::install::gpl_dist: REDHAT_AS_LINUX
 gpfs::install::pkg_list:
     - kernel-devel
+    - kernel-headers
     - libstdc++
     - gpfs.base
     - gpfs.gpl
