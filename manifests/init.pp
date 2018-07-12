@@ -16,9 +16,9 @@ class gpfs(
 
     include gpfs::firewall
     include gpfs::install
-#    include gpfs::quota
-#    include gpfs::startup
     include gpfs::add_client
     include gpfs::cron
+    include gpfs::nativemounts
+    include gpfs::bindmounts
 
 }
