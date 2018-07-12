@@ -1,4 +1,7 @@
 ###
+#  NCSA custom quota command
+#
+#  @summary
 #  Override native gpfs quota command with a script that will
 #  invoke a custom quota command on the gpfs server specified by
 #  $host on $port.

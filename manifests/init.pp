@@ -1,12 +1,15 @@
 ###
 #   NCSA Spectrum Scale Puppet Module (formerly GPFS)
 #
+#   @summary
 #   This module will install the latest version of GPFS for the specified
 #   yum repository.  GPFS version is thus controlled by yumrepo_baseurl.
 #
 #   Parameters:
 #       resource_defaults - OPTIONAL
 #                           default values set in module hiera
+#   @example
+#       include gpfs
 ###
 
 class gpfs(

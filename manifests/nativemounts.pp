@@ -1,9 +1,16 @@
-# A description of what this class does
-#
-# @summary A short summary of the purpose of this class
+# @summary
+#   Mount all specified GPFS filesystems
 #
 # @example
-#   include gpfs::nativemounts
+#   This class is already included from gpfs::init, so just need to 
+#   specify, in hiera, which filesystems to mount 
+#
+#   HIERA
+#   ---
+#   gpfs::nativemounts::mountmap:
+#       lsst:
+#           opts: ro
+#
 class gpfs::nativemounts(
     Hash $mountmap = {},
 ) {

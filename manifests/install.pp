@@ -1,4 +1,8 @@
-# Parameters: 
+# @summary
+#   Manage a gpfs yum repo (optional)
+#   Install gpfs
+#   Build kernel module
+#   Parameters: 
 #     yumrepo_baseurl - Yum repo from which to install gpfs client packages
 #                       This will control the version of gpfs
 #                       Set this to empty string to disable yumrepo management
@@ -20,14 +24,8 @@ class gpfs::install(
 )
 {
 
-#    notify { 'kernel_module_build_only_if':
-#            message => "'${kernel_module_build_only_if}'",
-#    }
-
-
     # INSTALL THE YUM REPO (if provided)
     if $yumrepo_baseurl =~ String[1] {
-#        notify { 'yumrepo_baseurl is set, about to setup yumrepo': }
         yumrepo { 'puppet-gpfs':
             ensure   => present,
             baseurl  => $yumrepo_baseurl,

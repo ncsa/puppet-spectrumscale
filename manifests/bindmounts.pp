@@ -1,9 +1,19 @@
-# A description of what this class does
 #
-# @summary A short summary of the purpose of this class
+# @summary
+#   Create bindmounts as specified in Hiera
 #
 # @example
-#   include gpfs::bindmounts
+#   This class is already included by gpfs::init, so just need to specify,
+#   in hiera, the list of bindmounts and associated data.
+#
+#   HIERA
+#   ---
+#   gpfs::bindmounts::mountmap:
+#       /scratch:
+#           opts: nosuid
+#           src_path:  /lsst/scratch
+#           src_mountpoint: /lsst
+
 class gpfs::bindmounts(
     Hash $mountmap = {},
 ) {

@@ -1,4 +1,5 @@
 ###
+#  @summary
 #  Start GPFS and wait for verification that it started successfully
 #  PARAMETERS
 #    cmds - OPTIONAL
@@ -24,16 +25,7 @@ class gpfs::startup(
             tries       => 4,
             try_sleep   => 10,
             refreshonly => true,
-#            notify      => Exec[ 'wait_for_gpfs_mount' ],
         ;
-
-#        # WAIT FOR GPFS FILESYSTEMS TO BE MOUNTED
-#        'wait_for_gpfs_mount':
-#            command     => $cmds[ 'is_gpfs_mounted' ],
-#            tries       => 4,
-#            try_sleep   => 10,
-#            refreshonly => true,
-#        ;
 
         default:
             * => $gpfs::resource_defaults['exec'],
