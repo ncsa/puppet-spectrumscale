@@ -2,16 +2,20 @@
 # src is the gpfs source directory (usually a fileset)
 # opts is a comma separated string of mount options
 define gpfs::bindmount(
-    $src,
-    $opts = '',
+    String[1] $src_path,
+    String[1] $src_mountpoint,
+    String    $opts = '',
 )
 {
 #    notify {"gpfs::bindmount ${name}":}
 
     # Resource defaults
-    $resource_defaults = lookup( 'gpfs::resource_defaults' )
-    $mount_defaults = $resource_defaults['mount']
-    $dir_defaults = merge( $resource_defaults['file'], { 'ensure'=>'directory' } )
+    $dir_defaults = merge(
+        $gpfs::resource_defaults['file'],
+        { 'ensure' => 'directory',
+          'mode'   => '0744',
+        }
+    )
 
 
     # Build mount option string
@@ -43,21 +47,25 @@ define gpfs::bindmount(
         $name:
         ;
         # Ensure source directory exists (ie: gpfs is started and mounted)
-        $src:
+        $src_path:
             require => Class[ 'gpfs::startup' ],
         ;
-        default: * => $dir_defaults ;
+        default: * => $dir_defaults
+        ;
     }
 
 
-    # Define the mount point
+    # Define the bind mount point
     mount {
         $name:
-            device  => $src,
+            device  => $src_path,
             options => $optstr,
-            require => File[ $name, $src ],
+            require => [ File[ $name, $src_path ],
+                         Mount[ $src_mountpoint ],
+                       ],
         ;
-        default: * => $mount_defaults ;
+        default: * => $gpfs::resource_defaults['mount']
+        ;
     }
 
 }

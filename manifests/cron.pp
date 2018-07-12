@@ -26,7 +26,8 @@ class gpfs::cron (
     # EXEMPT GPFS FROM OOM KILLER
     file {
         $fn_gpfs_oom :
-            source  => "puppet:///modules/gpfs${fn_gpfs_oom}"
+            source => "puppet:///modules/gpfs${fn_gpfs_oom}",
+            mode   => '0700',
         ;
         default:
             * => $gpfs::resource_defaults['file']
@@ -55,6 +56,7 @@ class gpfs::cron (
         $fn_gpfs_license :
             ensure => $license_ensure,
             source => "puppet:///modules/gpfs${fn_gpfs_license}",
+            mode   => '0700',
         ;
         default:
             * => $gpfs::resource_defaults['file']

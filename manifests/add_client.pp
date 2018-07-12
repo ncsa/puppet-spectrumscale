@@ -64,12 +64,6 @@ class gpfs::add_client(
                              Exec[ 'rm_gpfs_add_client_sh' ],
                            ],
             ;
-            default:
-                * => $gpfs::resource_defaults['exec']
-            ;
-        }
-
-        exec {
             'rm_gpfs_add_client_sh':
                 command => "/bin/rm -f ${script_tgt_fn}",
                 require => File[ $script_tgt_fn ],

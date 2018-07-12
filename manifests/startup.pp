@@ -24,16 +24,16 @@ class gpfs::startup(
             tries       => 4,
             try_sleep   => 10,
             refreshonly => true,
-            notify      => Exec[ 'wait_for_gpfs_mount' ],
+#            notify      => Exec[ 'wait_for_gpfs_mount' ],
         ;
 
-        # WAIT FOR GPFS FILESYSTEMS TO BE MOUNTED
-        'wait_for_gpfs_mount':
-            command     => $cmds[ 'is_gpfs_mounted' ],
-            tries       => 4,
-            try_sleep   => 10,
-            refreshonly => true,
-        ;
+#        # WAIT FOR GPFS FILESYSTEMS TO BE MOUNTED
+#        'wait_for_gpfs_mount':
+#            command     => $cmds[ 'is_gpfs_mounted' ],
+#            tries       => 4,
+#            try_sleep   => 10,
+#            refreshonly => true,
+#        ;
 
         default:
             * => $gpfs::resource_defaults['exec'],

@@ -8,23 +8,26 @@
 #     pkg_list        - OPTIONAL
 #                       list of dependent OS packages to install
 #                       default value defined in module hiera
+#     kernel_module_build_only_if
+#                     - OPTIONAL
+#                       determine if the kernel module needs to be (re)built
+#                       default value defined in module hiera
 class gpfs::install(
     String              $yumrepo_baseurl,
     String[1]           $gpl_dist,
     Array[String[1], 1] $pkg_list,
+    String[1]           $kernel_module_build_only_if,
 )
 {
 
-#    notify {
-#        "yumrepo_baseurl='${yumrepo_baseurl}'":
-#            withpath => true,
+#    notify { 'kernel_module_build_only_if':
+#            message => "'${kernel_module_build_only_if}'",
 #    }
-
 
 
     # INSTALL THE YUM REPO (if provided)
     if $yumrepo_baseurl =~ String[1] {
-        notify { 'yumrepo_baseurl is set, about to setup yumrepo': }
+#        notify { 'yumrepo_baseurl is set, about to setup yumrepo': }
         yumrepo { 'puppet-gpfs':
             ensure   => present,
             baseurl  => $yumrepo_baseurl,
@@ -48,15 +51,25 @@ class gpfs::install(
 
 
     # INSTALL DEPENDENT OS PACKAGES
-    ensure_packages( $pkg_list )
+    # In an attempt to address the fact that gpfs rpm's don't have good
+    # dependency information, a custom yumrepo is built for each specific
+    # gpfs version and each custom yumrepo has only the rpm's that are relevant
+    # for that release. Thus, it is safe to specify ensure=latest because the
+    # gpfs version will only change when the yumrepo (above) is changed and
+    # the yumrepo will only ever change manually (via hiera update or similar)
+    ensure_packages( $pkg_list, {'ensure' => 'latest'} )
 
 
     # BUILD KERNEL MODULE
+    # Kernel modules need to be built when:
+    # 1. New kernel is installed, thus mmfs26.ko won't exist
+    # 2. New gpfs rpm's are installed, thus mmfs26.ko mtime will be older than
+    #    gpfs rpm installtime
     exec {
-        'GPFS-kernel-module':
+        'build-gpfs-kernel-module':
             environment => "LINUX_DISTRIBUTION=${gpl_dist}",
             command     => 'mmbuildgpl',
-            creates     => "/lib/modules/${facts['kernelrelease']}/extra/mmfs26.ko",
+            onlyif      => $kernel_module_build_only_if,
             require     => Package[ $pkg_list ],
         ;
         default:
