@@ -36,24 +36,51 @@ GSSAPIAuthentication no
 **NOTE** The gpfs puppet module will adjust */root/.ssh/authorized_keys* on each client as well as make appropriate firewall changes.
 
 # Usage
-The following are required parameters:
-* `gpfs::firewall::allowed_cidr` (STRING)
-    * A network address in CIDR format that encompasses all nodes that will be
-      part of the cluster.  This is used to create a firewall exception
-      allowing incoming traffic from this CIDR to GPFS ports.
+## Install gpfs client, join the gpfs cluster
+* `include gpfs`
+#### Required Parameters:
 * `gpfs::install::yumrepo_baseurl` (STRING)
     * The baseurl of the yum repo from which to install gpfs modules.
-      Use this to control which version of gpfs is installed.
+    * Note: GPFS rpm's (historically) don't provide sufficient dependency information.
+      Additionally, sometimes only some rpm pkg's update between versions.
+      Therefore, this package assumes the Yum Repo baseurl is single, specific gpfs version.
+      Likewise, the gpfs version to install is managed by changing this URL.
+* `gpfs::firewall::allow_from` (ARRAY)
+    * Array of Strings representing ip addresses of nodes that participate in the gpfs cluster.
+    * Supported formats are
+        * ip address range (ie: A.B.C.x-A.B.C.y)
+        * network CIDR (ie: A.B.C.D/Z)
+        * single ip address
 * `gpfs::add_client::master_server` (STRING)
     * Fully qualified domain name of the gpfs master server
-* `gpfs::add_client::sshkey_priv_contents` (STRING)
+* `gpfs::add_client::ssh_private_key_contents` (STRING)
     * The contents of the private ssh key created above.
-      Used only to ssh to the master server during setup (ie: addclient,
-      chlicense).  After setup, the private key is destroyed from the client node.
-* `gpfs::add_client::sshkey_pub_contents` (STRING)
+      Used only to ssh to the master server during setup.
+      For security, the private key is removed from the client node after gpfs installation.
+* `gpfs::add_client::ssh_public_key_contents` (STRING)
     * The contents of the public ssh key created above.  Added to root
       authorized keys file on each client to allow passwordless ssh from the
       master.
+
+## Mount native gpfs filesystem(s)
+If GPFS filesystem(s) are set to auto-mount on startup, no action is required. \
+To mount non-auto-start filetems(s), add the following to hiera...
+#### Required Paramaters:
+* `gpfs::nativemounts::mountmap` (HASH)
+    * Key is GPFS filesystem name
+    * Value is a HASH with optional paramters:
+        * `opts`
+            * Comma separated string of mount options (same format as passed to `mount` command)
+            * Defaults to `noauto`.
+            * opts string specified here will always be appended to the default value.
+        * `mountpoint`
+            * String - path to mountpoint for this filesystem.
+            * Default GPFS mountpath is usually `/FSNAME` and the module will use this format by default.
+            * If the mountpath is different from the default, then this parameter is required.
+    * NOTE: To mount a non-auto-mount filesystem for which the default _opts_ and _mountpoint_ are sufficient, pass an empty hash as the value.
+        * (ie: `gpfs::nativemounts::mountmap: { FSNAME: {} }` )
+
+
 * `gpfs::quota::host` (STRING)
     * host name or ip-address of a gpfs core server that listens for mmlsquota
       requests from the network
