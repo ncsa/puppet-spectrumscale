@@ -147,5 +147,6 @@ Set the following parameters:
 * `gpfs::quota::port` (INTEGER)
     * port (on the host above) to which remote mmlsquota requests should be
       sent
+
 See also: The file `manifests/templates/myquota.epp`
 
