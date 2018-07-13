@@ -62,9 +62,24 @@ GSSAPIAuthentication no
       authorized keys file on each client to allow passwordless ssh from the
       master.
 
+Hiera Example:
+```
+gpfs::install::yumrepo_baseurl: http://yumrepos.internal.domain.com/centos/$releasever/$basearch/gpfs-4.2.3-9/2018-06-24-1529875501/
+gpfs::firewall::allow_from:
+    - 1.2.3.0/24
+    - 4.5.6.1-4.5.6.31
+gpfs::add_client::master_server: gpfs-master.internal.domain.com
+gpfs::add_client::ssh_private_key_contents: |
+  -----BEGIN RSA PRIVATE KEY-----
+  MIIEowI...
+  ...
+  -----END RSA PRIVATE KEY-----
+gpfs::add_client::ssh_public_key_contents: AAAAB3N...
+```
+
 ## Mount native gpfs filesystem(s)
 If GPFS filesystem(s) are set to auto-mount on startup, no action is required. \
-To mount non-auto-start filetems(s), add the following to hiera...
+To mount non-auto-start filetems(s), the following parameters must be provided...
 #### Required Paramaters:
 * `gpfs::nativemounts::mountmap` (HASH)
     * Key is GPFS filesystem name
@@ -75,78 +90,62 @@ To mount non-auto-start filetems(s), add the following to hiera...
             * opts string specified here will always be appended to the default value.
         * `mountpoint`
             * String - path to mountpoint for this filesystem.
-            * Default GPFS mountpath is usually `/FSNAME` and the module will use this format by default.
+            * Default GPFS mountpath is `/FSNAME` and the module will use this format by default.
             * If the mountpath is different from the default, then this parameter is required.
-    * NOTE: To mount a non-auto-mount filesystem for which the default _opts_ and _mountpoint_ are sufficient, pass an empty hash as the value.
-        * (ie: `gpfs::nativemounts::mountmap: { FSNAME: {} }` )
+    * NOTE: If the defaults for _opts_ and _mountpoint_ are sufficient, pass an empty hash as the value.
+
+Hiera Example:
+```
+gpfs::nativemounts::mountmap:
+    fs0:
+        opts: nosuid,ro
+        mountpoint: /gpfs/fs0
+    fs1:
+        opts: noatime
+    fs2: {}
+```
+
+## Create bindmounts to a path below a gpfs mountpoint
+A common use case is to create multiple filesets inside a single filesystem and make each fileset look like a mounted filesystem.
+Bindmounts require the dependent filesystem to be listed in `gpfs::nativemounts::mountmap` even if the dependent filesystem is auto-mounted. \
+To create bindmounts, the following parameters must be provided...
+* `gpfs::bindmounts::mountmap:`
+    * Key is the path at which the bindmount should appear in the filesystem
+    * Value is a hash with the following keys:
+        * `src_mountpoint`: mountpath of the dependent filesystem (REQUIORED)
+        * `src_path`: path which the bindmount points to (REQUIRED)
+        * `opts`: comma separated string of mount options (OPTIONAL)
+
+Hiera Example:
+```
+gpfs::bindmounts::mountmap:
+    /scratch:
+        src_mountpoint: /gpfs/fs0
+        src_path: /gpfs/fs0/scratch
+    /software:
+        src_mountpoint: /fs2
+        src_path: /fs2/software
+        opts: noatime,ro
+```
+
+## (OPTIONAL) Create a cron job to accept client licenses
+The client install script attempts to accept the gpfs client license, but sometimes this does not succeed.
+If client nodes are frequently rebuilt, or for some other reason, the gpfs client licenses are frequently not accepted,
+this cron job can be installed on any one client node (it may not hurt to install on multiple client nodes,
+but it is a waste of resources, at minimum, or worse, could result in unexpected behavior). \
+To install the cron job, set the following parameter...
+* `gpfs::cron::accept_license: True`
 
 
+## (OPTIONAL) Run a custom quota command on the server
+Override the native `mmlsquota` and `mmrepquota` commands with a local script that will send the requests
+to a client running elsewhere (usually on a gpfs server) and return custom data. \
+Set the following parameters:
 * `gpfs::quota::host` (STRING)
-    * host name or ip-address of a gpfs core server that listens for mmlsquota
+    * host name or ip-address of the server that listens for mmlsquota
       requests from the network
 * `gpfs::quota::port` (INTEGER)
     * port (on the host above) to which remote mmlsquota requests should be
       sent
+See also: The file `manifests/templates/myquota.epp`
 
-## Hiera Example
-In the appropropriate YAML file(s), define the following keys:
-```
-gpfs::firewall::allowed_cidr: 111.222.0.0/16
-gpfs::install::yumrepo_baseurl: http://rh.my.company/rhelrepos/SpectrumScale_420-client
-gpfs::add_client::master_server: gpfs00.my.company
-gpfs::add_client::sshkey_priv_contents: |
-  -----BEGIN RSA PRIVATE KEY-----
-  abcdefgxyz123
-  SNIP - SNIP - SNIP
-  321zyxgfedcba
-  -----END RSA PRIVATE KEY-----
-gpfs::add_client::sshkey_pub_contents: AAAAB3NzaC1yc2EAAAADAQABAAABAQDjCJxNeh+sgZ4HeaF6TrDf6QD0SfZ//ZvdEOoyb5cBMS7hqPBuDbwMtpI9+80sCmtwTVLW0S09e8oG+2q68LNZxXBjIDr9b4n6GnUIxphTtVxkG8AIbvmVhD1QzoeGEMVQlpFKsHyJoWYyg5PDFdgpcpxNdue0CcLjSNDe1hXnUmOCwLjBvXkDkf2ROmdGRD3e+7HEXlesfIreXxuMTwcDK/2Q8XoB7EHgL5APm1GzrISE7Pd15ShED4klF+uivbs0B/V6fNdF0BmYjB7AqY+W7jCP6T1MrsJgLYIQiJfa7vb2Gmd7E39N3HyZiUKex0Sey3h1ld96zRcIeeEguPkx
-gpfs::quota::host: 111.222.3.4
-gpfs::quota::port: 9876
-```
-
-## Declarative Example
-```
-class { 'gpfs::firewall' :
-    allowed_cidr => '111.222.0.0/16',
-}
-
-class { 'gpfs::install' :
-    yumrepo_baseurl => 'http://rh.my.company/rhelrepos/SpectrumScale_420',
-}
-
-class { 'gpfs::quota' :
-    host => '111.222.3.4',
-    port => 9876,
-}
-
-### Add node to GPFS cluster and start GPFS
-class { 'gpfs::add_client' :
-    master_server => 'gpfs00.my.company',
-    sshkey_pub_contents => 'AAABBBCCC......xyz',
-    sshkey_priv_contents => '-----BEGIN RSA PRIVATE KEY-----
-...
------END RSA PRIVATE KEY-----',
-}
-```
-
-## Specifying bind mount points (useful for making a gpfs fileset look like a filesystem mount)
-```
-# A single bind mount
-gpfs::bindmount{ "/datasets": src => "/gpfs/fs0/datasets" }
-
-# Multiple bind mounts in a single declaration
-gpfs::bindmount{
-    "/scratch"  : src => "/gpfs/fs0/scratch";
-    "/software" : src => "/gpfs/fs0/software", opts => "ro";
-}
-```
-
-## Mounting filesystems readonly
-todo
-
-## Ignore mountpoint completely
-todo
-
-## Ignore mount at (GPFS) startup
-todo
