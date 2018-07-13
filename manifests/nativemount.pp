@@ -88,13 +88,23 @@ define gpfs::nativemount(
         ;
     }
 
+    # Ensure fstab is up to date
+    $fstab_update_cmdname = "fstab update ${mpath}"
+    exec {
+        $fstab_update_cmdname:
+            command => 'mmrefresh -f',
+            unless  => "grep '^${name} \{1,\}${mpath} \{1,\}gpfs' /etc/fstab",
+        ;
+        default: * => $gpfs::resource_defaults['exec']
+        ;
+    }
 
     # Ensure mounted
-    # Usual gpfs mountpoint is /<FSNAME>
     mount {
         $mpath:
             require => [ Class[ 'gpfs::startup' ],
                          File[ $mpath, $optfile ],
+                         Exec[ $fstab_update_cmdname ],
                        ],
         ;
         default: * => $gpfs::resource_defaults['mount']
