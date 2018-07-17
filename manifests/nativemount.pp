@@ -36,9 +36,9 @@ define gpfs::nativemount(
     $dir_defaults = merge(
         $gpfs::resource_defaults['file'],
         { 'ensure' => 'directory',
-          'mode'   => '0744',
+          'mode'   => '0755',
         }
-    )
+    ).delete( [ 'mode', 'group', 'owner' ] )
 
     # Build mount options string
     $defaultopts = 'noauto'

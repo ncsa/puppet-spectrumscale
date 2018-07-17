@@ -23,9 +23,8 @@ define gpfs::bindmount(
     $dir_defaults = merge(
         $gpfs::resource_defaults['file'],
         { 'ensure' => 'directory',
-          'mode'   => '0744',
         }
-    )
+    ).delete( [ 'mode', 'group', 'owner' ] )
 
 
     # Build mount option string
@@ -52,13 +51,11 @@ define gpfs::bindmount(
     }
 
 
+    # Remove mode from defaults so that existing tgt mount won't be affected
+    # otherwise might change perms on target mountpoint
     file {
         # Ensure target directory exists
         $name:
-        ;
-        # Ensure source directory exists (ie: gpfs is started and mounted)
-        $src_path:
-            require => Class[ 'gpfs::startup' ],
         ;
         default: * => $dir_defaults
         ;
@@ -70,7 +67,7 @@ define gpfs::bindmount(
         $name:
             device  => $src_path,
             options => $optstr,
-            require => [ File[ $name, $src_path ],
+            require => [ File[ $name ],
                          Exec[ "mmmount ${src_mountpoint}" ],
                        ],
         ;
