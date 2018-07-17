@@ -71,7 +71,7 @@ define gpfs::bindmount(
             device  => $src_path,
             options => $optstr,
             require => [ File[ $name, $src_path ],
-                         Mount[ $src_mountpoint ],
+                         Exec[ "mmmount ${src_mountpoint}" ],
                        ],
         ;
         default: * => $gpfs::resource_defaults['mount']

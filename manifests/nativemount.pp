@@ -88,26 +88,27 @@ define gpfs::nativemount(
         ;
     }
 
-    # Ensure fstab is up to date
     $fstab_update_cmdname = "fstab update ${mpath}"
+    $awk = @("ENDHERE"/$L)
+        BEGIN{rv=1};\
+        \$3=="gpfs" && \$2=="${mpath}" {rv=0;exit};\
+        END{exit rv}
+        |- ENDHERE
     exec {
+        # Ensure fstab is up to date
         $fstab_update_cmdname:
             command => 'mmrefresh -f',
-            unless  => "grep '^${name} \{1,\}${mpath} \{1,\}gpfs' /etc/fstab",
+            unless  => "awk -- '${awk}' /etc/fstab"
         ;
-        default: * => $gpfs::resource_defaults['exec']
-        ;
-    }
-
-    # Ensure mounted
-    mount {
-        $mpath:
+        # mount (if needed)
+        "mmmount ${mpath}":
+            creates => "${mpath}/.MOUNTED",
             require => [ Class[ 'gpfs::startup' ],
                          File[ $mpath, $optfile ],
                          Exec[ $fstab_update_cmdname ],
                        ],
         ;
-        default: * => $gpfs::resource_defaults['mount']
+        default: * => $gpfs::resource_defaults['exec']
         ;
     }
 
