@@ -85,36 +85,6 @@ function kill_procs() {
 }
 
 
-function rm_kernel_modules() {
-    [[ $DEBUG -eq 1 ]] && set -x
-    searchpaths=( {/usr,}/lib/modules )
-    for path in "${searchpaths[@]}"; do
-        find $path -xdev -type f -name 'mmfs*.ko' -delete
-    done
-    kmod_count=$(
-        for path in "${searchpaths[@]}"; do
-            find $path -xdev -type f -name 'mmfs*.ko'
-        done | wc -l
-    )
-    return $kmod_count
-}
-
-
-## WARNING - THIS IS LSST SPECIFIC
-## This functionality needs to move to
-## https://github.com/ncsa/puppet-spectrumscale
-## nosuid is separate from gpfs_unmount
-function set_nosuid() {
-    # 2018.05.11: configure nosuid for the lsst filesystem specifically and
-    # all filesystems generally
-    # - will be active the next time a/the filesystem is remounted
-    # - does not affect bindmounts, which we handle with Puppet
-    [[ -d "$GPFSCONF" ]] || mkdir -p "$GPFSCONF"
-    echo -n nosuid>"$GPFSCONF/localMountOptions.lsst"
-    echo -n nosuid>"$GPFSCONF/localMountOptions"
-}
-
-
 [[ $DEBUG -eq 1 ]] && set -x
 
 # Exit quickly if no GPFS
@@ -122,12 +92,6 @@ is_gpfs_installed || {
     echo "GPFS not found. Exiting."
     exit 0
 }
-
-
-
-## TODO - remove this call once the functionality is moved to puppet module
-set_nosuid
-
 
 
 if is_gpfs_running; then
@@ -168,9 +132,3 @@ if is_gpfs_running; then
     gpfs_off || die "GPFS shutdown was unsuccessful"
 
 fi
-
-# Remove kernel modules
-# Sometimes existing kernel modules will hinder RPM updates
-# Also, this will force new kernel modules to be built in case of GPFS client
-# version updates
-rm_kernel_modules || die "while trying to remove GPFS kernel modules"
