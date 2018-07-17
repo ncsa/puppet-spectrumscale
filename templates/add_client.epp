@@ -8,14 +8,21 @@
 
 DEBUG=1
 
+TOUCH=$(command -v touch)
+CHMOD=$(command -v chmod)
+CAT=$(command -v cat)
+SSH=$(command -v ssh)
+IPTABLES=$(command -v iptables)
+RM=$(command -v rm)
+
 FN_SSHKEY="<%= $ssh_private_key_path%>"
-/usr/bin/touch $FN_SSHKEY
-/usr/bin/chmod 600 $FN_SSHKEY
-/usr/bin/cat >$FN_SSHKEY <<< "<%= $ssh_private_key_contents %>"
+$TOUCH $FN_SSHKEY
+$CHMOD 600 $FN_SSHKEY
+$CAT >$FN_SSHKEY <<< "<%= $ssh_private_key_contents %>"
 
 [[ $DEBUG -gt 0 ]] && set -x
 
-SSH="/usr/bin/ssh -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
+SSHCOMMAND="$SSH -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
 
 function add_firewall {
     [[ $DEBUG -gt 0 ]] && set -x
@@ -31,8 +38,8 @@ function delete_firewall {
 function mod_firewall_helper {
     [[ $DEBUG -gt 0 ]] && set -x
     action="$1"
-    /sbin/iptables $action -s <%= $gpfs_master %> -m state --state NEW -j DROP
-    /sbin/iptables $action -s <%= $gpfs_master %> -m state --state ESTABLISHED -j ACCEPT
+    $IPTABLES $action -s <%= $gpfs_master %> -m state --state NEW -j DROP
+    $IPTABLES $action -s <%= $gpfs_master %> -m state --state ESTABLISHED -j ACCEPT
 }
 
 
@@ -40,19 +47,19 @@ function mod_firewall_helper {
 add_firewall
 
 # Remove gpfs client node registration from server
-$SSH /usr/lpp/mmfs/bin/mmdelnode <%= $client_hostname %>
+$SSHCOMMAND /usr/lpp/mmfs/bin/mmdelnode <%= $client_hostname %>
 
 # Allow incoming traffic from gpfs server
 delete_firewall
 
 # Add gpfs client node on server
-$SSH /usr/lpp/mmfs/bin/mmaddnode <%= $client_hostname %>
+$SSHCOMMAND /usr/lpp/mmfs/bin/mmaddnode <%= $client_hostname %>
 
 # Accept client license
-$SSH /usr/lpp/mmfs/bin/mmchlicense client --accept -N <%= $client_hostname %>
+$SSHCOMMAND /usr/lpp/mmfs/bin/mmchlicense client --accept -N <%= $client_hostname %>
 
 # Remove ssh key
-/usr/bin/rm -f $FN_SSHKEY
+$RM -f $FN_SSHKEY
 
 # Remove this file
-/usr/bin/rm -f <%= $script_fn %>
+$RM -f <%= $script_fn %>
