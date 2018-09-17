@@ -52,10 +52,12 @@ class gpfs::install(
     # In an attempt to address the fact that gpfs rpm's don't have good
     # dependency information, a custom yumrepo is built for each specific
     # gpfs version and each custom yumrepo has only the rpm's that are relevant
-    # for that release. Thus, it is safe to specify ensure=latest because the
-    # gpfs version will only change when the yumrepo (above) is changed and
-    # the yumrepo will only ever change manually (via hiera update or similar)
-    ensure_packages( $pkg_list, {'ensure' => 'latest'} )
+    # for that release.
+    # Ensure that gpfs rpms are present. Not using "latest" since
+    # gpfs rpm upgrade will fail while gpfs is running and this module is not
+    # built to shutdown gpfs first (nor is a random gpfs shutdown a useful
+    # action.)
+    ensure_packages( $pkg_list, {'ensure' => 'present'} )
 
 
     # BUILD KERNEL MODULE
