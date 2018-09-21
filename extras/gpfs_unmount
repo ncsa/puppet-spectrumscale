@@ -97,28 +97,22 @@ is_gpfs_installed || {
 if is_gpfs_running; then
 
     # Kill any processes still using files in GPFS
-#   ls_procs
     kill_procs || die "Filesystem still busy. Attempt to kill processes was unsuccessful"
-#   echo kill is done
-#   echo ls_procs...
-#   ls_procs
-#   exit 1
 
     # Attempt to unmount all bind mounts
-    # Sometimes, multiple bind mounts are present, keep looking until mount count == 1
+    # Sometimes, multiple bind mounts are present, keep looking until bind mount count = 0
     # If mount count doesn't change after 2 attempts, exit with an error
-    mounts_curr=( $( get_gpfs_mounts ) )
-    debug "GPFS MOUNTS"
-    debug "${mounts_curr[@]}"
+    bind_mounts=( $( get_bindmounts ) )
+    debug "GPFS BIND MOUNTS"
+    debug "${bind_mounts[@]}"
     repeat_attempts=0
-    while [[ ${#mounts_curr[*]} -gt 1 ]] ; do
-        debug "Attempt to unmount '${#mounts_curr[*]}' bind mounts"
-        get_bindmounts | xargs -r /bin/umount
-        prev_mcount=${#mounts_curr[*]}
-        mounts_curr=( $( get_gpfs_mounts ) )
-        debug "Current gpfs mounts: '${mounts_curr[@]}'"
-        debug "Current gpfs mount count: '${#mounts_curr[*]}'"
-        if [[ ${#mounts_curr[*]} -lt $prev_mcount ]] ; then
+    while [[ ${#bind_mounts[*]} -gt 0 ]] ; do
+        debug "Attempt to unmount '${#bind_mounts[*]}' bind mounts"
+        echo "${bind_mounts[@]}" | xargs -r /bin/umount
+        prev_mcount=${#bind_mounts[*]}
+        bind_mounts=( $( get_bindmounts ) )
+        debug "Current bind mounts: '${mounts_curr[@]}'"
+        if [[ ${#bind_mounts[*]} -lt $prev_mcount ]] ; then
             debug "resetting attempts counter"
             repeat_attempts=0
         else
