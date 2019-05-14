@@ -5,43 +5,73 @@ GPFSBIN=/usr/lpp/mmfs/bin
 GPFSCONF=/var/mmfs/etc
 
 
-function die() {
+die() {
     echo "ERROR: $*" 1>&2
     exit 99
 }
 
 
-function debug() {
+debug() {
     [[ $DEBUG -eq 1 ]] || return 0
     echo "DEBUG: $*"
 }
 
 
-function is_gpfs_installed() {
+clean_exit() {
+    echo "$*"
+    exit 0
+}
+
+
+is_gpfs_installed() {
     [[ $DEBUG -eq 1 ]] && set -x
     [[ -d $GPFSBIN ]]
 }
 
 
-function is_gpfs_running() {
+get_gpfs_state() {
     [[ $DEBUG -eq 1 ]] && set -x
-    $GPFSBIN/mmgetstate | grep $HOSTNAME | grep -q active
+    $GPFSBIN/mmgetstate | grep $HOSTNAME | awk '{print $NF}'
 }
 
 
-function is_gpfs_stopped() {
+are_kernel_modules_loaded() {
     [[ $DEBUG -eq 1 ]] && set -x
-    $GPFSBIN/mmgetstate | grep $HOSTNAME | grep -q down
+    [[ $(lsmod | grep mmfs | wc -l) -gt 0 ]]
 }
 
 
-function get_gpfs_mounts() {
+is_gpfs_stopped() {
+    [[ $DEBUG -eq 1 ]] && set -x
+    cur_state=$( get_gpfs_state )
+    # stopped?
+    local stopped=1
+    if [[ -z "$cur_state" ]] ; then
+        stopped=0
+    elif [[ "$cur_state" == "down" ]] ; then
+        stopped=0
+    fi
+    # modules?
+    ! are_kernel_modules_loaded
+    local modules=$?
+    # result
+    local rc
+    let "rc = $stopped + $modules"
+    return $rc
+}
+
+is_gpfs_running() {
+    ! is_gpfs_stopped
+}
+
+
+get_gpfs_mounts() {
     [[ $DEBUG -eq 1 ]] && set -x
     mount -t gpfs | awk '{print $3}'
 }
 
 
-function get_bindmounts() {
+get_bindmounts() {
     [[ $DEBUG -eq 1 ]] && set -x
     awk '
         NR==FNR { gpfs_mounts[$1]++; next }
@@ -50,7 +80,7 @@ function get_bindmounts() {
 }
 
 
-function gpfs_off() {
+gpfs_off() {
     # Attempt to turn off / shutdown gpfs
     # This will unmount all native gpfs mounts (but not bindmounts)
     # Return 0 on success, non-zero otherwise
@@ -61,23 +91,23 @@ function gpfs_off() {
 }
 
 
-function ls_procs() {
+ls_procs() {
     # List all unique process IDs that are accessing files on any gpfs mountpoint
     [[ $DEBUG -eq 1 ]] && set -x
     get_gpfs_mounts | xargs -r -n1 lsof -t | sort -ur
 }
 
 
-function kill_procs() {
+kill_procs() {
     # Attempt to kill processes accessing files on gpfs
     [[ $DEBUG -eq 1 ]] && set -x
 
     #try HUP first
-    ls_procs | xargs -r kill
+    ls_procs | xargs -r -- kill
     [[ $( ls_procs | wc -l ) -gt 0 ]] && sleep 5
 
     #if anything left, send KILL
-    ls_procs | xargs -r kill -9
+    ls_procs | xargs -r -- kill -9
     [[ $( ls_procs | wc -l ) -gt 0 ]] && sleep 5
 
     #return 0 if no procs remain, non-zero otherwise
@@ -89,8 +119,7 @@ function kill_procs() {
 
 # Exit quickly if no GPFS
 is_gpfs_installed || {
-    echo "GPFS not found. Exiting."
-    exit 0
+    clean_exit "GPFS not found. Exiting."
 }
 
 
@@ -100,7 +129,8 @@ if is_gpfs_running; then
     kill_procs || die "Filesystem still busy. Attempt to kill processes was unsuccessful"
 
     # Attempt to unmount all bind mounts
-    # Sometimes, multiple bind mounts are present, keep looking until bind mount count = 0
+    # Sometimes, multiple bind mounts are present,
+    # keep looking until bind mount count == 0
     # If mount count doesn't change after 2 attempts, exit with an error
     bind_mounts=( $( get_bindmounts ) )
     debug "GPFS BIND MOUNTS"
@@ -126,3 +156,4 @@ if is_gpfs_running; then
     gpfs_off || die "GPFS shutdown was unsuccessful"
 
 fi
+clean_exit
