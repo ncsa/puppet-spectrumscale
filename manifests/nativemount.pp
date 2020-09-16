@@ -28,88 +28,89 @@
 #       mountpoint='/data' }
 #   }
 define gpfs::nativemount(
-    $opts = '',
-    $mountpoint = '',
+  $opts = '',
+  $mountpoint = '',
 ) {
 
-    # Resource defaults
-    $dir_defaults = merge(
-        $gpfs::resource_defaults['file'],
-        { 'ensure' => 'directory',
-          'mode'   => '0755',
-        }
-    ).delete( [ 'mode', 'group', 'owner' ] )
+  # Resource defaults
+  $dir_defaults = merge(
+    $gpfs::resource_defaults['file'],
+    { 'ensure' => 'directory',
+      'mode'   => '0755',
+    }
+  ).delete( [ 'mode', 'group', 'owner' ] )
 
-    # Build mount options string
-    $defaultopts = 'noauto'
-    if $opts =~ String[2] {
-        $optstr = "${defaultopts},${opts}"
-    }
-    else {
-        $optstr = $defaultopts
-    }
+  # Build mount options string
+  $defaultopts = 'noauto'
+  if $opts =~ String[2] {
+    $optstr = "${defaultopts},${opts}"
+  }
+  else {
+    $optstr = $defaultopts
+  }
 
-    # Create mount options control file
-    $optfile = "/var/mmfs/etc/localMountOptions.${name}"
-    file {
-        $optfile :
-            content => $optstr,
-        ;
-        default: * => $gpfs::resource_defaults['file']
-        ;
-    }
+  # Create mount options control file
+  $optfile = "/var/mmfs/etc/localMountOptions.${name}"
+  file {
+    $optfile :
+      content => $optstr,
+    ;
+    default: * => $gpfs::resource_defaults['file']
+    ;
+  }
 
-    # Determine mountpath
-    $default_mountpoint = "/${name}"
-    if $mountpoint =~ String[1] {
-        $mpath = $mountpoint
-    } else {
-        $mpath = $default_mountpoint
-    }
+  # Determine mountpath
+  $default_mountpoint = "/${name}"
+  if $mountpoint =~ String[1] {
+    $mpath = $mountpoint
+  } else {
+    $mpath = $default_mountpoint
+  }
 
-    # Ensure parents of mountpath dir exist, if needed (excluding / )
-    $dirparts = reject( split( $mpath, '/' ), '^$' )
-    $numparts = size( $dirparts )
-    if ( $numparts > 1 ) {
-        each( Integer[2,$numparts] ) |$i| {
-            ensure_resource(
-                'file',
-                reduce( Integer[2,$i], $mpath ) |$memo, $val| { dirname( $memo ) },
-                $dir_defaults
-            )
-        }
+  # Ensure parents of mountpath dir exist, if needed (excluding / )
+  $dirparts = reject( split( $mpath, '/' ), '^$' )
+  $numparts = size( $dirparts )
+  if ( $numparts > 1 ) {
+    each( Integer[2,$numparts] ) |$i| {
+      ensure_resource(
+        'file',
+        reduce( Integer[2,$i], $mpath ) |$memo, $val| { dirname( $memo ) },
+        $dir_defaults
+      )
     }
+  }
 
-    # Ensure mountpath dir exists
-    file {
-        $mpath:
-        ;
-        default: * => $dir_defaults
-        ;
-    }
+  # Ensure mountpath dir exists
+  file {
+    $mpath:
+    ;
+    default: * => $dir_defaults
+    ;
+  }
 
-    $fstab_update_cmdname = "fstab update ${mpath}"
-    $awk = @("ENDHERE"/$L)
-        BEGIN{rv=1};\
-        \$3=="gpfs" && \$2=="${mpath}" {rv=0;exit};\
-        END{exit rv}
-        |- ENDHERE
-    exec {
-        # Ensure fstab is up to date
-        $fstab_update_cmdname:
-            command => 'mmrefresh -f',
-            unless  => "awk -- '${awk}' /etc/fstab"
-        ;
-        # mount (if needed)
-        "mmmount ${mpath}":
-            creates => "${mpath}/.MOUNTED",
-            require => [ Class[ 'gpfs::startup' ],
-                         File[ $mpath, $optfile ],
-                         Exec[ $fstab_update_cmdname ],
-                       ],
-        ;
-        default: * => $gpfs::resource_defaults['exec']
-        ;
-    }
+  $fstab_update_cmdname = "fstab update ${mpath}"
+  $awk = @("ENDHERE"/$L)
+    BEGIN{rv=1};\
+    \$3=="gpfs" && \$2=="${mpath}" {rv=0;exit};\
+    END{exit rv}
+    |- ENDHERE
+  exec {
+    # Ensure fstab is up to date
+    $fstab_update_cmdname:
+      command => 'mmrefresh -f',
+      unless  => "awk -- '${awk}' /etc/fstab"
+    ;
+    # mount (if needed)
+    "mmmount ${mpath}":
+      creates => "${mpath}/.MOUNTED",
+      require => [
+        Class[ 'gpfs::startup' ],
+        File[ $mpath, $optfile ],
+        Exec[ $fstab_update_cmdname ],
+      ],
+    ;
+    default: * => $gpfs::resource_defaults['exec']
+    ;
+  }
 
 }

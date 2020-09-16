@@ -15,11 +15,11 @@
 #           src_mountpoint: /lsst
 
 class gpfs::bindmounts(
-    Hash $mountmap = {},
+  Hash $mountmap = {},
 ) {
 
-    $mountmap.each | $k, $v | {
-        gpfs::bindmount{ $k: * => $v }
-    }
+  $mountmap.each | $k, $v | {
+    gpfs::bindmount{ $k: * => $v }
+  }
 
 }

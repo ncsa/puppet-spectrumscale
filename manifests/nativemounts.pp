@@ -12,11 +12,11 @@
 #           opts: ro
 #
 class gpfs::nativemounts(
-    Hash $mountmap = {},
+  Hash $mountmap = {},
 ) {
 
-    $mountmap.each | $k, $v | {
-        gpfs::nativemount{ $k: * => $v }
-    }
+  $mountmap.each | $k, $v | {
+    gpfs::nativemount{ $k: * => $v }
+  }
 
 }

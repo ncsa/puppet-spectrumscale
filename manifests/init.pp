@@ -13,15 +13,15 @@
 ###
 
 class gpfs(
-    Hash[String[1], Hash[String[1], Data, 1], 1] $resource_defaults,
+  Hash[String[1], Hash[String[1], Data, 1], 1] $resource_defaults,
 )
 {
 
-    include gpfs::firewall
-    include gpfs::install
-    include gpfs::add_client
-    include gpfs::cron
-    include gpfs::nativemounts
-    include gpfs::bindmounts
+  include gpfs::firewall
+  include gpfs::install
+  include gpfs::add_client
+  include gpfs::cron
+  include gpfs::nativemounts
+  include gpfs::bindmounts
 
 }
