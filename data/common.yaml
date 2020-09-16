@@ -1,42 +1,39 @@
 ---
-gpfs::add_client::mmsdrfs: /var/mmfs/gen/mmsdrfs
-gpfs::add_client::ssh_private_key_path: /root/.ssh/id_gpfs
-gpfs::add_client::script_tgt_fn: /root/gpfs_add_client.sh
-gpfs::cron::accept_license: False
-gpfs::resource_defaults:
-    cron:
-        user: root
-        minute: 0
-        hour: absent
-        monthday: absent
-        month: absent
-        weekday: absent
-        environment:
-            - DATE=date +%y%m%d_%H%M%S
-    exec:
-        logoutput: true
-        path:
-            - /bin
-            - /sbin
-            - /usr/bin
-            - /usr/sbin
-            - /usr/lpp/mmfs/bin
-        user: root
-    file:
-        ensure: present
-        owner: root
-        group: root
-        mode: '0644'
-    mount:
-        fstype: gpfs
-        ensure: mounted
-gpfs::startup::cmds:
-    is_gpfs_mounted: test $( mount -t gpfs | wc -l ) -gt 0
-    mmgetstate: test $( mmgetstate | grep active | wc -l ) -gt 0
-# Build kernel module if mmfs26.ko doesn't exist
-# Re-build kernel module if new gpfs rpm pkgs have been installed
-gpfs::install::kernel_module_build_only_if: test $(rpm -q --qf '%-{installtime}' gpfs.base) -gt $(stat -c %Y /lib/modules/$(uname -r)/extra/mmfs26.ko 2>/dev/null || echo 0)
-
 lookup_options:
-    gpfs::(.*)::mountmap:
-        merge: hash
+  gpfs::(.*)::mountmap:
+    merge: "hash"
+
+gpfs::add_client::mmsdrfs: "/var/mmfs/gen/mmsdrfs"
+gpfs::add_client::ssh_private_key_path: "/root/.ssh/id_gpfs"
+gpfs::add_client::script_tgt_fn: "/root/gpfs_add_client.sh"
+gpfs::cron::accept_license: false
+gpfs::resource_defaults:
+  cron:
+    user: "root"
+    minute: 0
+    hour: "absent"
+    monthday: "absent"
+    month: "absent"
+    weekday: "absent"
+    environment:
+      - "DATE=date +%y%m%d_%H%M%S"
+  exec:
+    logoutput: true
+    path:
+      - "/bin"
+      - "/sbin"
+      - "/usr/bin"
+      - "/usr/sbin"
+      - "/usr/lpp/mmfs/bin"
+    user: "root"
+  file:
+    ensure: "present"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  mount:
+    fstype: "gpfs"
+    ensure: "mounted"
+gpfs::startup::cmds:
+  is_gpfs_mounted: "test $( mount -t gpfs | wc -l ) -gt 0"
+  mmgetstate: "test $( mmgetstate | grep active | wc -l ) -gt 0"
