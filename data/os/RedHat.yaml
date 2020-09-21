@@ -10,3 +10,4 @@ gpfs::install::pkg_list:
     - gpfs.msg.en_US
     - gpfs.ext
     - gpfs.gskit
+    - gcc-c++
