@@ -12,7 +12,6 @@ TOUCH=$(command -v touch)
 CHMOD=$(command -v chmod)
 CAT=$(command -v cat)
 SSH=$(command -v ssh)
-IPTABLES=$(command -v iptables)
 RM=$(command -v rm)
 
 FN_SSHKEY="<%= $ssh_private_key_path%>"
@@ -24,36 +23,11 @@ $CAT >$FN_SSHKEY <<< "<%= $ssh_private_key_contents %>"
 
 SSHCOMMAND="$SSH -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
 
-function add_firewall {
-    [[ $DEBUG -gt 0 ]] && set -x
-    mod_firewall_helper '-I INPUT 1'
-}
-
-
-function delete_firewall {
-    [[ $DEBUG -gt 0 ]] && set -x
-    mod_firewall_helper '-D INPUT'
-}
-
-function mod_firewall_helper {
-    [[ $DEBUG -gt 0 ]] && set -x
-    action="$1"
-    $IPTABLES $action -s <%= $gpfs_master %> -m state --state NEW -j DROP
-    $IPTABLES $action -s <%= $gpfs_master %> -m state --state ESTABLISHED -j ACCEPT
-}
-
-
-# Block incoming traffic from gpfs server
-add_firewall
-
 # Remove gpfs client node registration from server
-$SSHCOMMAND /usr/lpp/mmfs/bin/mmdelnode <%= $client_hostname %>
-
-# Allow incoming traffic from gpfs server
-delete_firewall
+$SSHCOMMAND /usr/lpp/mmfs/bin/mmdelnode -N <%= $client_hostname %>
 
 # Add gpfs client node on server
-$SSHCOMMAND /usr/lpp/mmfs/bin/mmaddnode <%= $client_hostname %>
+$SSHCOMMAND /usr/lpp/mmfs/bin/mmaddnode -N <%= $client_hostname %>
 
 # Accept client license
 $SSHCOMMAND /usr/lpp/mmfs/bin/mmchlicense client --accept -N <%= $client_hostname %>
