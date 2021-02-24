@@ -1,6 +1,6 @@
 ---
 lookup_options:
-  gpfs::(.*)::mountmap:
+  '^gpfs::(.*)::mountmap$':
     merge: "hash"
 
 gpfs::add_client::mmsdrfs: "/var/mmfs/gen/mmsdrfs"
