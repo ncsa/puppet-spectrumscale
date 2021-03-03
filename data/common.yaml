@@ -6,6 +6,7 @@ lookup_options:
 gpfs::add_client::mmsdrfs: "/var/mmfs/gen/mmsdrfs"
 gpfs::add_client::ssh_private_key_path: "/root/.ssh/id_gpfs"
 gpfs::add_client::script_tgt_fn: "/root/gpfs_add_client.sh"
+gpfs::add_client::nodeclasses: []
 gpfs::cron::accept_license: false
 gpfs::resource_defaults:
   cron:

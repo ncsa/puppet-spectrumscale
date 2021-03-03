@@ -1,21 +1,26 @@
-###
-#  Add this node to the gpfs cluster
-#  PARAMETERS
-#    master_server            - FQDN of gpfs master server
-#    ssh_private_key_contents - private ssh key contents to enable ssh into
-#                               master_server
-#    ssh_public_key_contents  - public ssh key contents to enable ssh into
-#                               master_server
-#    ssh_private_key_path     - OPTIONAL
-#                               path to store the gpfs private key
-#                               default set in module hiera
-#    script_tgt_fn            - OPTIONAL
-#                               where to store the "add_client" bash script
-#                               default set in module hiera
-#    mmsdrfs                  - OPTIONAL
-#                               path to mmsdrfs command
-#                               default set in module hiera
-####
+# @summary Add this node to the gpfs cluster
+#
+# @param master_server
+#   FQDN of gpfs master server
+#
+# @param ssh_private_key_contents
+#   private ssh key contents to enable ssh into master_server
+#
+# @param ssh_public_key_contents
+#   public ssh key contents to enable ssh into master_server
+#
+# @param nodeclasses
+#   OPTIONAL - list of nodeclasses to which this node should be added master_server
+#
+# @param ssh_private_key_path
+#   OPTIONAL - path to store the gpfs private key (default set in module hiera)
+#
+# @param script_tgt_fn
+#   OPTIONAL - where to store the "add_client" bash script default set in module hiera
+#
+# @param mmsdrfs
+#   OPTIONAL - path to mmsdrfs command default set in module hiera
+
 class gpfs::add_client(
   String[1] $master_server,
   String[1] $ssh_private_key_contents,
@@ -23,6 +28,7 @@ class gpfs::add_client(
   String[1] $ssh_private_key_path,
   String[1] $script_tgt_fn,
   String[1] $mmsdrfs,
+  Array     $nodeclasses,
 )
 {
 
@@ -44,6 +50,7 @@ class gpfs::add_client(
           'gpfs_master'              => $master_server,
           'client_hostname'          => $facts['hostname'],
           'script_fn'                => $script_tgt_fn,
+          'nodeclasses'              => $nodeclasses,
           }
         ),
       ;

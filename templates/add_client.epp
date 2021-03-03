@@ -3,37 +3,119 @@
       String $gpfs_master,
       String $client_hostname,
       String $script_fn,
-    | -%>
+      Array  $nodeclasses,
+| -%>
 #!/bin/bash
 
 DEBUG=1
-
-TOUCH=$(command -v touch)
-CHMOD=$(command -v chmod)
-CAT=$(command -v cat)
-SSH=$(command -v ssh)
-RM=$(command -v rm)
-
-FN_SSHKEY="<%= $ssh_private_key_path%>"
-$TOUCH $FN_SSHKEY
-$CHMOD 600 $FN_SSHKEY
-$CAT >$FN_SSHKEY <<< "<%= $ssh_private_key_contents %>"
-
 [[ $DEBUG -gt 0 ]] && set -x
 
+CAT=$(command -v cat)
+CHMOD=$(command -v chmod)
+FN_SSHKEY="<%= $ssh_private_key_path%>"
+MMBIN=/usr/lpp/mmfs/bin
+NODE=<%= $client_hostname %>
+RM=$(command -v rm)
+SSH=$(command -v ssh)
 SSHCOMMAND="$SSH -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
+TOUCH=$(command -v touch)
 
-# Remove gpfs client node registration from server
-$SSHCOMMAND /usr/lpp/mmfs/bin/mmdelnode -N <%= $client_hostname %>
 
-# Add gpfs client node on server
-$SSHCOMMAND /usr/lpp/mmfs/bin/mmaddnode -N <%= $client_hostname %>
+die() {
+  echo "ERROR $*" >&2
+  exit 99
+}
 
-# Accept client license
-$SSHCOMMAND /usr/lpp/mmfs/bin/mmchlicense client --accept -N <%= $client_hostname %>
 
-# Remove ssh key
-$RM -f $FN_SSHKEY
+warn() {
+  echo "WARN $*" >&2
+}
 
-# Remove this file
-$RM -f <%= $script_fn %>
+
+setup() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  $TOUCH $FN_SSHKEY
+  $CHMOD 600 $FN_SSHKEY
+  $CAT >$FN_SSHKEY <<< "<%= $ssh_private_key_contents %>"
+}
+
+
+is_node_in_cluster() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  $SSHCOMMAND "$MMBIN/mmlscluster | grep -q $NODE"
+}
+
+
+rm_node_from_cluster() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  is_node_in_cluster || return 0
+  $SSHCOMMAND "$MMBIN/mmdelnode -N $NODE"
+  sleep 1
+  is_node_in_cluster && die "failed to remove previous node registration"
+}
+
+
+add_node_to_cluster() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  $SSHCOMMAND "$MMBIN/mmaddnode -N $NODE"
+  sleep 1
+  is_node_in_cluster || die "failed to add node to gpfs cluster"
+}
+
+
+node_has_license() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  $SSHCOMMAND "$MMBIN/mmlslicense -L | grep $NODE | grep -F '*'"
+  [[ $? -ne 0 ]]
+}
+
+
+accept_license() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  $SSHCOMMAND "$MMBIN/mmchlicense client --accept -N $NODE"
+  sleep 1
+  node_has_license || warn "failed to accept gpfs client license"
+}
+
+
+is_node_in_class() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  local _nodeclass="$1"
+  $SSHCOMMAND "$MMBIN/mmlsnodeclass $_nodeclass | grep -q $NODE"
+}
+
+
+add_node_to_class() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  local _nodeclass="$1"
+  is_node_in_class "$_nodeclass" && return 0
+  $SSHCOMMAND "$MMBIN/mmchnodeclass $_nodeclass add -N $NODE"
+  sleep 1
+  is_node_in_class
+}
+
+
+cleanup() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  # Remove ssh key
+  $RM -f $FN_SSHKEY
+
+  # Remove this file
+  $RM -f <%= $script_fn %>
+}
+
+
+setup
+
+rm_node_from_cluster
+
+add_node_to_cluster
+
+accept_license
+
+# Add node to any nodeclasses
+<% $nodeclasses.each |$classname| { %> 
+  add_node_to_class <%= $classname %>
+<% } -%>
+
+#cleanup
