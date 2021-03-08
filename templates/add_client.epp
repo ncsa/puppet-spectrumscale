@@ -1,5 +1,6 @@
-<%- | String  $client_hostname,
+<%- | String  $hostname,
       String  $gpfs_master,
+      String  $ipaddress,
       Array   $nodeclasses,
       String  $pagepool,
       Integer $pagepool_max_ram_percent,
@@ -16,10 +17,11 @@ CAT=$(command -v cat)
 CHMOD=$(command -v chmod)
 FN_SSHKEY="<%= $ssh_private_key_path%>"
 MMBIN=/usr/lpp/mmfs/bin
-NODE=<%= $client_hostname %>
+NODE=<%= $hostname %>
+IPADDR=<%= $ipaddress %>
 RM=$(command -v rm)
 SSH=$(command -v ssh)
-SSHCOMMAND="$SSH -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
+SSHCOMMAND="$SSH -T -o StrictHostKeyChecking=no -i $FN_SSHKEY <%= $gpfs_master %>"
 TOUCH=$(command -v touch)
 
 
@@ -65,6 +67,19 @@ ensure_node_is_in_cluster() {
   fi
 }
 
+
+update_hostkeys() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  $SSHCOMMAND <<ENDHERE
+ssh-keygen -R $NODE
+ssh-keygen -R $IPADDR
+ssh-keygen -R $NODE,$IPADDR
+ssh-keyscan $NODE,$IPADDR >> ~/.ssh/known_hosts
+ssh-keyscan $IPADDR >> ~/.ssh/known_hosts
+ssh-keyscan $NODE >> ~/.ssh/known_hosts
+ENDHERE
+
+}
 
 rm_node_from_cluster() {
   [[ $DEBUG -gt 0 ]] && set -x
@@ -148,6 +163,8 @@ cleanup() {
 
 
 setup
+
+update_hostkeys
 
 ensure_node_is_in_cluster
 

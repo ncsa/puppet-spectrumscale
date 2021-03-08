@@ -55,8 +55,9 @@ class gpfs::add_client(
         group   => root,
         mode    => '0700',
         content => epp('gpfs/add_client.epp', {
-          'client_hostname'          => $facts['hostname'],
+          'hostname'                 => $facts['hostname'],
           'gpfs_master'              => $master_server,
+          'ipaddress'                => $facts['ipaddress'],
           'nodeclasses'              => $nodeclasses,
           'pagepool'                 => $pagepool,
           'pagepool_max_ram_percent' => $pagepool_max_ram_percent,
