@@ -9,6 +9,14 @@
 # @param ssh_public_key_contents
 #   public ssh key contents to enable ssh into master_server
 #
+# @param pagepool
+#   OPTIONAL - Amount of RAM to dedicate to gpfs pagepool.
+#   Format: integer number followed by one of K, M, or G.
+#
+# @param pagepool_max_ram_percent
+#   OPTIONAL - Max percent of RAM allowed for gpfs pagepool.
+#   Must be an integer between 10 and 90.
+#
 # @param nodeclasses
 #   OPTIONAL - list of nodeclasses to which this node should be added master_server
 #
@@ -23,12 +31,14 @@
 
 class gpfs::add_client(
   String[1] $master_server,
+  Array     $nodeclasses,
+  String    $pagepool,
+  Integer   $pagepool_max_ram_percent,
   String[1] $ssh_private_key_contents,
   String[1] $ssh_public_key_contents,
   String[1] $ssh_private_key_path,
   String[1] $script_tgt_fn,
   String[1] $mmsdrfs,
-  Array     $nodeclasses,
 )
 {
 
@@ -45,12 +55,14 @@ class gpfs::add_client(
         group   => root,
         mode    => '0700',
         content => epp('gpfs/add_client.epp', {
+          'client_hostname'          => $facts['hostname'],
+          'gpfs_master'              => $master_server,
+          'nodeclasses'              => $nodeclasses,
+          'pagepool'                 => $pagepool,
+          'pagepool_max_ram_percent' => $pagepool_max_ram_percent,
+          'script_fn'                => $script_tgt_fn,
           'ssh_private_key_contents' => $ssh_private_key_contents,
           'ssh_private_key_path'     => $ssh_private_key_path,
-          'gpfs_master'              => $master_server,
-          'client_hostname'          => $facts['hostname'],
-          'script_fn'                => $script_tgt_fn,
-          'nodeclasses'              => $nodeclasses,
           }
         ),
       ;

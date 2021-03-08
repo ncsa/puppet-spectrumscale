@@ -1,9 +1,11 @@
-<%- | String $ssh_private_key_contents,
-      String $ssh_private_key_path,
-      String $gpfs_master,
-      String $client_hostname,
-      String $script_fn,
-      Array  $nodeclasses,
+<%- | String  $client_hostname,
+      String  $gpfs_master,
+      Array   $nodeclasses,
+      String  $pagepool,
+      Integer $pagepool_max_ram_percent,
+      String  $script_fn,
+      String  $ssh_private_key_contents,
+      String  $ssh_private_key_path,
 | -%>
 #!/bin/bash
 
@@ -32,6 +34,11 @@ warn() {
 }
 
 
+log() {
+  echo "INFO $*"
+}
+
+
 setup() {
   [[ $DEBUG -gt 0 ]] && set -x
   $TOUCH $FN_SSHKEY
@@ -43,6 +50,19 @@ setup() {
 is_node_in_cluster() {
   [[ $DEBUG -gt 0 ]] && set -x
   $SSHCOMMAND "$MMBIN/mmlscluster | grep -q $NODE"
+}
+
+
+ensure_node_is_in_cluster() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  if is_node_in_cluster ; then
+    $SSHCOMMAND "$MMBIN/mmsdrrestore -N $NODE" \
+    || die "error while attempting to restore gpfs cluster config file"
+  else
+    add_node_to_cluster
+    sleep 1
+    is_node_in_cluster || die "failed to add node to gpfs cluster"
+  fi
 }
 
 
@@ -58,8 +78,6 @@ rm_node_from_cluster() {
 add_node_to_cluster() {
   [[ $DEBUG -gt 0 ]] && set -x
   $SSHCOMMAND "$MMBIN/mmaddnode -N $NODE"
-  sleep 1
-  is_node_in_cluster || die "failed to add node to gpfs cluster"
 }
 
 
@@ -72,9 +90,33 @@ node_has_license() {
 
 accept_license() {
   [[ $DEBUG -gt 0 ]] && set -x
+  node_has_license && return 0
   $SSHCOMMAND "$MMBIN/mmchlicense client --accept -N $NODE"
   sleep 1
   node_has_license || warn "failed to accept gpfs client license"
+}
+
+
+configure_pagepool() {
+  [[ $DEBUG -gt 0 ]] && set -x
+  local _cfg_parts=()
+  local _cfg
+
+  <% if $pagepool =~ String[1] { -%>
+  log "Setting pagepool to <%= $pagepool %>"
+  _cfg_parts+=( "pagepool=<%= $pagepool %>" )
+  <% } -%>
+
+  <% if $pagepool_max_ram_percent =~ Integer[10,90] { -%>
+  log "Setting pagepoolMaxPhysMemPct to <%= $pagepool_max_ram_percent %>"
+  _cfg_parts+=( "pagepoolMaxPhysMemPct=<%= $pagepool_max_ram_percent %>" )
+  <% } -%>
+
+  if [[ ${#_cfg_parts[@]} -gt 0 ]] ; then
+    _cfg="$( IFS=','; cat <<< "${_cfg_parts[*]}" )"
+    $SSHCOMMAND "$MMBIN/mmchconfig ${_cfg} -N $NODE"
+  fi
+
 }
 
 
@@ -107,15 +149,15 @@ cleanup() {
 
 setup
 
-rm_node_from_cluster
-
-add_node_to_cluster
+ensure_node_is_in_cluster
 
 accept_license
+
+configure_pagepool
 
 # Add node to any nodeclasses
 <% $nodeclasses.each |$classname| { %> 
   add_node_to_class <%= $classname %>
 <% } -%>
 
-#cleanup
+cleanup
