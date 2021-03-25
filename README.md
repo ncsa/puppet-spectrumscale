@@ -1,6 +1,9 @@
 # Puppet SpectrumScale
 Puppet module to mount the SpectrumScale filesystem (formerly known as GPFS).
 
+[![yamllint](https://github.com/ncsa/puppet-spectrumscale/actions/workflows/yamllint.yml/badge.svg)](https://github.com/ncsa/puppet-spectrumscale/actions/workflows/yamllint.yml)
+[![pdk-validate](https://github.com/ncsa/puppet-spectrumscale/actions/workflows/pdk-validate.yml/badge.svg)](https://github.com/ncsa/puppet-spectrumscale/actions/workflows/pdk-validate.yml)
+
 # Requirements
 * GPFS is setup in *adminMode=central*
 * The gpfs client nodes' hostname (as returned by the *hostname* command):
