@@ -11,7 +11,8 @@
 # @param src_mountpoint
 #   The mountpath of the gpfs filesystem that this bindmount depends
 #   on
-# @param ops
+#
+# @param opts
 #   Comma separated list of mount options.
 #
 define gpfs::bindmount(

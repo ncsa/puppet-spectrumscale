@@ -1,10 +1,8 @@
-###
-#  @summary
-#  Start GPFS and wait for verification that it started successfully
-#  PARAMETERS
-#    cmds - OPTIONAL
-#           default values set in module hiera
-###
+# @summary
+#   Start GPFS and wait for verification that it started successfully
+#
+# @param cmds
+#   OPTIONAL - default values set in module hiera
 #
 class gpfs::startup (
   Hash[String[1], String[1], 2, 2] $cmds,

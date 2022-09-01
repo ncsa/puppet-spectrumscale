@@ -42,12 +42,12 @@ GSSAPIAuthentication no
 ## Install gpfs client, join the gpfs cluster
 * `include gpfs`
 #### Required Parameters:
-* `gpfs::install::yumrepo_baseurl` (STRING)
-    * The baseurl of the yum repo from which to install gpfs modules.
-    * Note: GPFS rpm's (historically) don't provide sufficient dependency information.
-      Additionally, sometimes only some rpm pkg's update between versions.
-      Therefore, this package assumes the Yum Repo baseurl is single, specific gpfs version.
-      Likewise, the gpfs version to install is managed by changing this URL.
+* `gpfs::install::yumrepo` (HASH)
+    * Data for a yumrepo from which to install gpfs packages.
+    * Note: GPFS RPMs (historically) don't provide sufficient dependency information.
+      Additionally, sometimes only some RPM pkgs update between versions.
+      Therefore, this package assumes the yumrepo baseurl is single, specific gpfs version.
+      Likewise, the gpfs version to install is managed by changing the data for this yumrepo resource.
 * `gpfs::firewall::allow_from` (ARRAY)
     * Array of Strings representing ip addresses of nodes that participate in the gpfs cluster.
     * Supported formats are

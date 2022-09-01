@@ -1,27 +1,28 @@
 # @summary
 #   Manage a gpfs yum repo (optional) & Install GPFS
 #
-# @param yumrepo_baseurl
-#   Yum repo from which to install gpfs client packages. This will control the
-#   version of gpfs. Set this to empty string to disable yumrepo management.
+# @param yumrepo
+#   Hash of yumrepo parameters in form of yumrepo parameters
+#
 # @param pkg_list
 #   OPTIONAL - List of dependent OS packages to install. Default value defined
 #   in module hiera.
 #
 class gpfs::install (
-  String              $yumrepo_baseurl,
+  Hash                $yumrepo,
   Array[String[1], 1] $pkg_list,
 ) {
 
   # INSTALL THE YUM REPO (if provided)
-  if $yumrepo_baseurl =~ String[1] {
-    yumrepo { 'puppet-gpfs':
-      ensure   => present,
-      baseurl  => $yumrepo_baseurl,
-      descr    => 'Puppet Spectrum Scale',
-      enabled  => 1,
-      gpgcheck => 0,
+  if ( ! empty($yumrepo) ) {
+    yumrepo { 'gpfs':
+      * => $yumrepo,
     }
+  }
+
+  # REMOVE OLD VERSION OF REPO
+  yumrepo { 'puppet-gpfs':
+    ensure => absent,
   }
 
   # GPFS profile.d PATH SCRIPT
