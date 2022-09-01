@@ -5,6 +5,7 @@
 #   This class is already included from gpfs::init, so just need to 
 #   specify, in hiera, which filesystems to mount 
 #
+# @param mountmap
 #   HIERA
 #   ---
 #   gpfs::nativemounts::mountmap:

@@ -4,21 +4,17 @@
 #   Create mount options file, populated with specified options
 #   Ensure parent (mountpoint) directory exists
 #   Ensure the filesystem is mounted
-#
 #   Name: gpfs filesystem name
-#   Parameters:
-#     opts       - OPTIONAL
-#                  comma separated string of additional mount options
-#                  defaults to 'noauto'
-#                  note: 'noauto' will always be included in the options
-#                        (cannot be overridden)
-#     mountpoint - OPTIONAL
-#                  where the filesystem is mounted at
-#                  defaults to '/FSNAME', where FSNAME is replaced with the
-#                  gpfs filesystem name
-#                  note: this must match the mountpoint specified in the gpfs
-#                        filesystem configuration (ie: mmlsfs)
-#     
+#
+# @param opts
+#   OPTIONAL - Comma separated string of additional mount options.
+#   Defaults to 'noauto'. Note: 'noauto' will always be included in the
+#   options (cannot be overridden).
+#
+# @param mountpoint
+#   OPTIONAL - Where the filesystem is mounted at defaults to '/FSNAME', where
+#   FSNAME is replaced with the gpfs filesystem name. Note: this must match
+#   the mountpoint specified in the gpfs filesystem configuration (ie: mmlsfs).
 #
 # @example
 #   gpfs::nativemount { 'software': }

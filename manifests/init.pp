@@ -6,16 +6,16 @@
 #   yum repository.  GPFS version is thus controlled by yumrepo_baseurl.
 #
 #   Parameters:
-#       resource_defaults - OPTIONAL
-#                           default values set in module hiera
-#   @example
-#       include gpfs
+# @param resource_defaults
+#   OPTIONAL - default values set in module hiera
+#
+# @example
+#   include gpfs
 ###
-
-class gpfs(
+#
+class gpfs (
   Hash[String[1], Hash[String[1], Data, 1], 1] $resource_defaults,
-)
-{
+) {
 
   include gpfs::firewall
   include gpfs::install

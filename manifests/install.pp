@@ -1,17 +1,17 @@
 # @summary
 #   Manage a gpfs yum repo (optional) & Install GPFS
-#   Parameters: 
-#     yumrepo_baseurl - Yum repo from which to install gpfs client packages
-#                       This will control the version of gpfs
-#                       Set this to empty string to disable yumrepo management
-#     pkg_list        - OPTIONAL
-#                       list of dependent OS packages to install
-#                       default value defined in module hiera
-class gpfs::install(
+#
+# @param yumrepo_baseurl
+#   Yum repo from which to install gpfs client packages. This will control the
+#   version of gpfs. Set this to empty string to disable yumrepo management.
+# @param pkg_list
+#   OPTIONAL - List of dependent OS packages to install. Default value defined
+#   in module hiera.
+#
+class gpfs::install (
   String              $yumrepo_baseurl,
   Array[String[1], 1] $pkg_list,
-)
-{
+) {
 
   # INSTALL THE YUM REPO (if provided)
   if $yumrepo_baseurl =~ String[1] {

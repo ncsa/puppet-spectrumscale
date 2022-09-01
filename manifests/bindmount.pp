@@ -1,16 +1,19 @@
 # Create a bindmount
 #
-# Note: this defined type is not intended to be invoked directly,
-#       but rather via gpfs::bindmounts
+# @summary
+#   Defined type, not intended to be invoked directly, but rather via
+#   gpfs::bindmounts. The name of the resource is the target mountpath.
 #
-# PARAMETERS:
-#   (name)         - The target mountpath of this bindmount
-#                    (ie: the directory path users will see)
-#   src_path       - The source of this bindmount
-#                    (ie: the directory this bindmount will point to)
-#   src_mountpoint - The mountpath of the gpfs filesystem
-#                    that this bindmount depends on
-#   opts           - Comma separated list of mount options
+# @param src_path
+#   The source of this bindmount (ie: the directory this bindmount will point
+#   to).
+#
+# @param src_mountpoint
+#   The mountpath of the gpfs filesystem that this bindmount depends
+#   on
+# @param ops
+#   Comma separated list of mount options.
+#
 define gpfs::bindmount(
   String[1] $src_path,
   String[1] $src_mountpoint,

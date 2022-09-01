@@ -5,6 +5,7 @@ lookup_options:
   gpfs::add_client::nodeclasses:
     merge: "unique"
 
+gpfs::add_client::interface: ""
 gpfs::add_client::mmsdrfs: "/var/mmfs/gen/mmsdrfs"
 gpfs::add_client::nodeclasses: []
 gpfs::add_client::pagepool: ""

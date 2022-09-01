@@ -1,10 +1,17 @@
 ###
 #  NCSA custom quota command
 #
-#  @summary
-#  Override native gpfs quota command with a script that will
-#  invoke a custom quota command on the gpfs server specified by
-#  $host on $port.
+# @summary
+#   Override native gpfs quota command with a script that will
+#   invoke a custom quota command on the gpfs server specified by
+#   $host on $port.
+#
+# @param host
+#   Host that should be used for custom quota command.
+#
+# @param port
+#   Port on the custom quota host.
+#
 ###
 class gpfs::quota (
   String[1]         $host,

@@ -5,11 +5,10 @@
 #    cmds - OPTIONAL
 #           default values set in module hiera
 ###
-
-class gpfs::startup(
+#
+class gpfs::startup (
   Hash[String[1], String[1], 2, 2] $cmds,
-)
-{
+) {
 
   exec {
     # START GPFS

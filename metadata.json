@@ -2,11 +2,18 @@
   "name": "ncsa-gpfs",
   "version": "0.1.0",
   "author": "Andy Loftus",
-  "summary": "",
+  "summary": "Spectrum Scale (GPFS) support",
   "license": "NCSA",
-  "source": "",
+  "source": "https://github.com/ncsa/puppet-spectrumscale.git",
   "dependencies": [
-
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 6.3.0 < 7.0.0"
+    },
+    {
+      "name": "puppetlabs-firewall",
+      "version_requirement": ">= 3.0.0 < 4.0.0"
+    }
   ],
   "operatingsystem_support": [
     {
@@ -40,7 +47,7 @@
       "version_requirement": ">= 4.7.0 < 6.0.0"
     }
   ],
-  "pdk-version": "1.17.0",
-  "template-url": "pdk-default#1.17.0",
-  "template-ref": "tags/1.17.0-0-gd3a4319"
+  "pdk-version": "2.3.0",
+  "template-url": "pdk-default#2.3.0",
+  "template-ref": "tags/2.3.0-0-g8aaceff"
 }

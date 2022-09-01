@@ -6,6 +6,7 @@
 #   This class is already included by gpfs::init, so just need to specify,
 #   in hiera, the list of bindmounts and associated data.
 #
+# @param mountmap
 #   HIERA
 #   ---
 #   gpfs::bindmounts::mountmap:
@@ -13,8 +14,8 @@
 #           opts: nosuid
 #           src_path:  /lsst/scratch
 #           src_mountpoint: /lsst
-
-class gpfs::bindmounts(
+#
+class gpfs::bindmounts (
   Hash $mountmap = {},
 ) {
 

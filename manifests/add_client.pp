@@ -9,6 +9,10 @@
 # @param ssh_public_key_contents
 #   public ssh key contents to enable ssh into master_server
 #
+# @param interface
+#   OPTIONAL - Name of network interface whose IP will be used to register with GPFS.
+#   If undefined with add with default (accoring to Puppet) IP address.
+#
 # @param pagepool
 #   OPTIONAL - Amount of RAM to dedicate to gpfs pagepool.
 #   Format: integer number followed by one of K, M, or G.
@@ -28,8 +32,9 @@
 #
 # @param mmsdrfs
 #   OPTIONAL - path to mmsdrfs command default set in module hiera
-
-class gpfs::add_client(
+#
+class gpfs::add_client (
+  String    $interface,
   String[1] $master_server,
   Array     $nodeclasses,
   String    $pagepool,
@@ -39,8 +44,7 @@ class gpfs::add_client(
   String[1] $ssh_private_key_path,
   String[1] $script_tgt_fn,
   String[1] $mmsdrfs,
-)
-{
+) {
 
   include gpfs::startup
 
@@ -48,6 +52,14 @@ class gpfs::add_client(
   if ! $facts['is_gpfs_member_node']
   {
     # ADD_CLIENT BASH SCRIPT
+
+    # GET IP OF GPFS INTERFACE
+    if ( ! empty( $interface ) ) {
+      $gpfs_ip_address = $facts['networking']['interfaces'][$interface]['ip']
+    } else {
+      $gpfs_ip_address = $facts['ipaddress']
+    }
+
     file {
       $script_tgt_fn:
         ensure  => present,
@@ -57,7 +69,7 @@ class gpfs::add_client(
         content => epp('gpfs/add_client.epp', {
           'hostname'                 => $facts['hostname'],
           'gpfs_master'              => $master_server,
-          'ipaddress'                => $facts['ipaddress'],
+          'ipaddress'                => $gpfs_ip_address,
           'nodeclasses'              => $nodeclasses,
           'pagepool'                 => $pagepool,
           'pagepool_max_ram_percent' => $pagepool_max_ram_percent,

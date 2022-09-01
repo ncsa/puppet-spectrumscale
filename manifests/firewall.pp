@@ -1,10 +1,10 @@
-# Parameters: 
-#     allow_from - allow incoming traffic from these sources
-#                  on GPFS specific tcp ports
-class gpfs::firewall(
+# @param allow_from
+#   Allow incoming traffic from these sources on GPFS specific tcp
+#   ports.
+#
+class gpfs::firewall (
   Array[String[1], 1] $allow_from,
-)
-{
+) {
   $common_parms = {
     proto  => tcp,
     action => accept,

@@ -4,7 +4,8 @@
 #    - (OPTIONAL) accept license for all nodes in cluster
 #
 # Parameters: 
-#     accept_license - Boolean - install cron script to auto accept license
+# @param accept_license
+#   Install cron script to auto accept license
 ###
 class gpfs::cron (
   Boolean $accept_license,
