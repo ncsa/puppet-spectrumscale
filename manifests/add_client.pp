@@ -107,6 +107,18 @@ class gpfs::add_client (
       ;
     }
   }
+  else
+  {
+    exec {
+      'rm_gpfs_add_client_sh':
+        command => "/bin/rm -f ${script_tgt_fn}",
+        onlyif  => "test -f ${script_tgt_fn}",
+      ;
+      default:
+        * => $gpfs::resource_defaults['exec']
+      ;
+    }
+  }
 
   # AUTHORIZE SSH FROM GPFS MASTER
   ssh_authorized_key { 'gpfs_master_authorized_key':

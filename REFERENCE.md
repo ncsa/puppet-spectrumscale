@@ -9,40 +9,23 @@
 * [`gpfs`](#gpfs): NCSA Spectrum Scale Puppet Module (formerly GPFS)    @summary   This module will install the latest version of GPFS for the specified   yum r
 * [`gpfs::add_client`](#gpfsadd_client): Add this node to the gpfs cluster
 * [`gpfs::bindmounts`](#gpfsbindmounts): Create bindmounts as specified in Hiera
-* [`gpfs::cron`](#gpfscron): Install cron jobs for:    - Exempt gpfs from linux kernel OOM killer    - (OPTIONAL) accept license for all nodes in cluster  Parameters:    
-* [`gpfs::firewall`](#gpfsfirewall): Parameters:     allow_from - allow incoming traffic from these sources                  on GPFS specific tcp ports
+* [`gpfs::cron`](#gpfscron): Install cron jobs for:    - Exempt gpfs from linux kernel OOM killer    - (OPTIONAL) accept license for all nodes in cluster  Parameters:
+* [`gpfs::firewall`](#gpfsfirewall)
 * [`gpfs::install`](#gpfsinstall): Manage a gpfs yum repo (optional) & Install GPFS
-Parameters:
-  yumrepo_baseurl - Yum repo from which to install gpfs client packages
-                    This will control the version of gpfs
-                    Set this to empty string to disable yumrepo management
-  pkg_list        - OPTIONAL
-                    list of dependent OS packages to install
-                    default value defined in module hiera
 * [`gpfs::nativemounts`](#gpfsnativemounts): Mount all specified GPFS filesystems
-* [`gpfs::quota`](#gpfsquota): NCSA custom quota command   @summary  Override native gpfs quota command with a script that will  invoke a custom quota command on the gpfs s
-* [`gpfs::startup`](#gpfsstartup): @summary  Start GPFS and wait for verification that it started successfully  PARAMETERS    cmds - OPTIONAL           default values set in mo
+* [`gpfs::quota`](#gpfsquota): Override native gpfs quota command with a script that will
+invoke a custom quota command on the gpfs server specified by
+$host on $port.
+* [`gpfs::startup`](#gpfsstartup): Start GPFS and wait for verification that it started successfully
 
 ### Defined types
 
-* [`gpfs::bindmount`](#gpfsbindmount): Create a bindmount  Note: this defined type is not intended to be invoked directly,       but rather via gpfs::bindmounts  PARAMETERS:   (nam
+* [`gpfs::bindmount`](#gpfsbindmount): Defined type, not intended to be invoked directly, but rather via
+gpfs::bindmounts. The name of the resource is the target mountpath.
 * [`gpfs::nativemount`](#gpfsnativemount): Create mount options file, populated with specified options
 Ensure parent (mountpoint) directory exists
 Ensure the filesystem is mounted
-
 Name: gpfs filesystem name
-Parameters:
-  opts       - OPTIONAL
-               comma separated string of additional mount options
-               defaults to 'noauto'
-               note: 'noauto' will always be included in the options
-                     (cannot be overridden)
-  mountpoint - OPTIONAL
-               where the filesystem is mounted at
-               defaults to '/FSNAME', where FSNAME is replaced with the
-               gpfs filesystem name
-               note: this must match the mountpoint specified in the gpfs
-                     filesystem configuration (ie: mmlsfs)
 
 ## Classes
 
@@ -55,10 +38,14 @@ NCSA Spectrum Scale Puppet Module (formerly GPFS)
   yum repository.  GPFS version is thus controlled by yumrepo_baseurl.
 
   Parameters:
-      resource_defaults - OPTIONAL
-                          default values set in module hiera
-  @example
-      include gpfs
+
+#### Examples
+
+##### 
+
+```puppet
+include gpfs
+```
 
 #### Parameters
 
@@ -70,7 +57,7 @@ The following parameters are available in the `gpfs` class:
 
 Data type: `Hash[String[1], Hash[String[1], Data, 1], 1]`
 
-
+OPTIONAL - default values set in module hiera
 
 ### <a name="gpfsadd_client"></a>`gpfs::add_client`
 
@@ -165,14 +152,6 @@ Create bindmounts as specified in Hiera
 ```puppet
 This class is already included by gpfs::init, so just need to specify,
 in hiera, the list of bindmounts and associated data.
-
-HIERA
----
-gpfs::bindmounts::mountmap:
-    /scratch:
-        opts: nosuid
-        src_path:  /lsst/scratch
-        src_mountpoint: /lsst
 ```
 
 #### Parameters
@@ -185,7 +164,13 @@ The following parameters are available in the `gpfs::bindmounts` class:
 
 Data type: `Hash`
 
-
+HIERA
+---
+gpfs::bindmounts::mountmap:
+    /scratch:
+        opts: nosuid
+        src_path:  /lsst/scratch
+        src_mountpoint: /lsst
 
 Default value: `{}`
 
@@ -196,7 +181,6 @@ Install cron jobs for:
    - (OPTIONAL) accept license for all nodes in cluster
 
 Parameters:
-    accept_license - Boolean - install cron script to auto accept license
 
 #### Parameters
 
@@ -208,13 +192,11 @@ The following parameters are available in the `gpfs::cron` class:
 
 Data type: `Boolean`
 
-
+Install cron script to auto accept license
 
 ### <a name="gpfsfirewall"></a>`gpfs::firewall`
 
-Parameters:
-    allow_from - allow incoming traffic from these sources
-                 on GPFS specific tcp ports
+The gpfs::firewall class.
 
 #### Parameters
 
@@ -226,37 +208,32 @@ The following parameters are available in the `gpfs::firewall` class:
 
 Data type: `Array[String[1], 1]`
 
-
+Allow incoming traffic from these sources on GPFS specific tcp
+ports.
 
 ### <a name="gpfsinstall"></a>`gpfs::install`
 
 Manage a gpfs yum repo (optional) & Install GPFS
-Parameters:
-  yumrepo_baseurl - Yum repo from which to install gpfs client packages
-                    This will control the version of gpfs
-                    Set this to empty string to disable yumrepo management
-  pkg_list        - OPTIONAL
-                    list of dependent OS packages to install
-                    default value defined in module hiera
 
 #### Parameters
 
 The following parameters are available in the `gpfs::install` class:
 
-* [`yumrepo_baseurl`](#yumrepo_baseurl)
+* [`yumrepo`](#yumrepo)
 * [`pkg_list`](#pkg_list)
 
-##### <a name="yumrepo_baseurl"></a>`yumrepo_baseurl`
+##### <a name="yumrepo"></a>`yumrepo`
 
-Data type: `String`
+Data type: `Hash`
 
-
+Hash of yumrepo parameters in form of yumrepo parameters
 
 ##### <a name="pkg_list"></a>`pkg_list`
 
 Data type: `Array[String[1], 1]`
 
-
+OPTIONAL - List of dependent OS packages to install. Default value defined
+in module hiera.
 
 ### <a name="gpfsnativemounts"></a>`gpfs::nativemounts`
 
@@ -269,12 +246,6 @@ Mount all specified GPFS filesystems
 ```puppet
 This class is already included from gpfs::init, so just need to
 specify, in hiera, which filesystems to mount
-
-HIERA
----
-gpfs::nativemounts::mountmap:
-    lsst:
-        opts: ro
 ```
 
 #### Parameters
@@ -287,18 +258,17 @@ The following parameters are available in the `gpfs::nativemounts` class:
 
 Data type: `Hash`
 
-
+HIERA
+---
+gpfs::nativemounts::mountmap:
+    lsst:
+        opts: ro
 
 Default value: `{}`
 
 ### <a name="gpfsquota"></a>`gpfs::quota`
 
 NCSA custom quota command
-
- @summary
- Override native gpfs quota command with a script that will
- invoke a custom quota command on the gpfs server specified by
- $host on $port.
 
 #### Parameters
 
@@ -311,21 +281,17 @@ The following parameters are available in the `gpfs::quota` class:
 
 Data type: `String[1]`
 
-
+Host that should be used for custom quota command.
 
 ##### <a name="port"></a>`port`
 
 Data type: `Integer[1, 65535]`
 
-
+Port on the custom quota host.
 
 ### <a name="gpfsstartup"></a>`gpfs::startup`
 
-@summary
- Start GPFS and wait for verification that it started successfully
- PARAMETERS
-   cmds - OPTIONAL
-          default values set in module hiera
+Start GPFS and wait for verification that it started successfully
 
 #### Parameters
 
@@ -337,25 +303,13 @@ The following parameters are available in the `gpfs::startup` class:
 
 Data type: `Hash[String[1], String[1], 2, 2]`
 
-
+OPTIONAL - default values set in module hiera
 
 ## Defined types
 
 ### <a name="gpfsbindmount"></a>`gpfs::bindmount`
 
 Create a bindmount
-
-Note: this defined type is not intended to be invoked directly,
-      but rather via gpfs::bindmounts
-
-PARAMETERS:
-  (name)         - The target mountpath of this bindmount
-                   (ie: the directory path users will see)
-  src_path       - The source of this bindmount
-                   (ie: the directory this bindmount will point to)
-  src_mountpoint - The mountpath of the gpfs filesystem
-                   that this bindmount depends on
-  opts           - Comma separated list of mount options
 
 #### Parameters
 
@@ -369,19 +323,21 @@ The following parameters are available in the `gpfs::bindmount` defined type:
 
 Data type: `String[1]`
 
-
+The source of this bindmount (ie: the directory this bindmount will point
+to).
 
 ##### <a name="src_mountpoint"></a>`src_mountpoint`
 
 Data type: `String[1]`
 
-
+The mountpath of the gpfs filesystem that this bindmount depends
+on
 
 ##### <a name="opts"></a>`opts`
 
 Data type: `String`
 
-
+Comma separated list of mount options.
 
 Default value: `''`
 
@@ -413,7 +369,9 @@ The following parameters are available in the `gpfs::nativemount` defined type:
 
 Data type: `Any`
 
-
+OPTIONAL - Comma separated string of additional mount options.
+Defaults to 'noauto'. Note: 'noauto' will always be included in the
+options (cannot be overridden).
 
 Default value: `''`
 
@@ -421,7 +379,9 @@ Default value: `''`
 
 Data type: `Any`
 
-
+OPTIONAL - Where the filesystem is mounted at defaults to '/FSNAME', where
+FSNAME is replaced with the gpfs filesystem name. Note: this must match
+the mountpoint specified in the gpfs filesystem configuration (ie: mmlsfs).
 
 Default value: `''`
 

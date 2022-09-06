@@ -1,7 +1,17 @@
 ---
+gpfs::install::yumrepo:
+  name: "gpfs"
+  ensure: "present"
+  #baseurl: "https://<yum-server>/repos/GPFS/5.0.1.1/gpfs_rpms"   # MUST BE SET
+  descr: "IBM Spectrum Scale GPFS - $basearch"
+  enabled: true
+  gpgcheck: false
+  #gpgkey: ""
+
 gpfs::install::pkg_list:
   - "gcc-c++"
   - "gpfs.base"
+  - "gpfs.compression"
   - "gpfs.docs"
   - "gpfs.gpl"
   - "gpfs.gskit"
@@ -9,3 +19,4 @@ gpfs::install::pkg_list:
   - "kernel-devel"
   - "kernel-headers"
   - "libstdc++"
+  - "m4"
