@@ -124,7 +124,8 @@ class gpfs::add_client (
   ssh_authorized_key { 'gpfs_master_authorized_key':
     user => 'root',
     type => 'ssh-rsa',
-    name => 'root@lsst_gpfs',
+    #name => "root@${master_server}",
+    name => 'root@gpfs',
     key  => $ssh_public_key_contents,
   }
 
