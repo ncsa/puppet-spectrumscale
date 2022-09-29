@@ -11,6 +11,7 @@ gpfs::add_client::nodeclasses: []
 gpfs::add_client::pagepool: ""
 gpfs::add_client::pagepool_max_ram_percent: 0
 gpfs::add_client::ssh_private_key_path: "/root/.ssh/id_gpfs"
+gpfs::add_client::ssh_public_key_type: "rsa"
 gpfs::add_client::script_tgt_fn: "/root/gpfs_add_client.sh"
 gpfs::cron::accept_license: false
 gpfs::resource_defaults:
