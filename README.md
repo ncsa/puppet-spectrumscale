@@ -66,7 +66,7 @@ GSSAPIAuthentication no
       master.
 
 Hiera Example:
-```
+```yaml
 gpfs::install::yumrepo_baseurl: http://yumrepos.internal.domain.com/centos/$releasever/$basearch/gpfs-4.2.3-9/2018-06-24-1529875501/
 gpfs::firewall::allow_from:
     - 1.2.3.0/24
@@ -98,7 +98,7 @@ To mount non-auto-start filetems(s), the following parameters must be provided..
     * NOTE: If the defaults for _opts_ and _mountpoint_ are sufficient, pass an empty hash as the value.
 
 Hiera Example:
-```
+```yaml
 gpfs::nativemounts::mountmap:
     fs0:
         opts: nosuid,ro
@@ -120,7 +120,7 @@ To create bindmounts, the following parameters must be provided...
         * `opts`: comma separated string of mount options (OPTIONAL)
 
 Hiera Example:
-```
+```yaml
 gpfs::bindmounts::mountmap:
     /scratch:
         src_mountpoint: /gpfs/fs0
@@ -129,6 +129,28 @@ gpfs::bindmounts::mountmap:
         src_mountpoint: /fs2
         src_path: /fs2/software
         opts: noatime,ro
+```
+
+## (OPTIONAL) Enable GPFS client Health Check via Telegraf
+
+Hiera Example:
+```yaml
+gpfs::health::enabled: true
+
+profile_sudo::configs:
+  telegraf:
+    content:
+      - "telegraf ALL = NOPASSWD: /usr/lpp/mmfs/bin/mmdiag"
+```
+
+By default the Health Check config file will populate usage config settings based on `gpfs::bindmounts::mountmap:` 
+& `gpfs::bindmounts::mountmap` parameters. But if needed you can override any of these config parameters. 
+Below is example Hiera data for overriding these:
+```yaml
+gpfs::health::telegraf_script_cfg_fs: "fs1 fs2"
+gpfs::health::telegraf_script_cfg_paths: "/fs1/home /fs2/scratch"
+gpfs::health::telegraf_script_cfg_files: "/fs1/.snapshots /fs2/.snapshots"
+gpfs::health::telegraf_script_cfg_filestat: ".snapshots"
 ```
 
 ## (OPTIONAL) Create a cron job to accept client licenses
@@ -153,3 +175,12 @@ Set the following parameters:
 
 See also: The file `manifests/templates/myquota.epp`
 
+
+## Dependencies
+
+- ncsa/profile_sudo
+- ncsa/sshd
+
+## Reference
+
+See: [REFERENCE.md](REFERENCE.md)

@@ -11,6 +11,7 @@
 * [`gpfs::bindmounts`](#gpfsbindmounts): Create bindmounts as specified in Hiera
 * [`gpfs::cron`](#gpfscron): Install cron jobs for:    - Exempt gpfs from linux kernel OOM killer    - (OPTIONAL) accept license for all nodes in cluster  Parameters:
 * [`gpfs::firewall`](#gpfsfirewall)
+* [`gpfs::health`](#gpfshealth): Congifure GPFS Health Checks Via Telegraf
 * [`gpfs::install`](#gpfsinstall): Manage a gpfs yum repo (optional) & Install GPFS
 * [`gpfs::nativemounts`](#gpfsnativemounts): Mount all specified GPFS filesystems
 * [`gpfs::quota`](#gpfsquota): Override native gpfs quota command with a script that will
@@ -67,34 +68,17 @@ Add this node to the gpfs cluster
 
 The following parameters are available in the `gpfs::add_client` class:
 
-* [`master_server`](#master_server)
-* [`ssh_private_key_contents`](#ssh_private_key_contents)
-* [`ssh_public_key_contents`](#ssh_public_key_contents)
 * [`interface`](#interface)
+* [`master_server`](#master_server)
+* [`mmsdrfs`](#mmsdrfs)
+* [`nodeclasses`](#nodeclasses)
 * [`pagepool`](#pagepool)
 * [`pagepool_max_ram_percent`](#pagepool_max_ram_percent)
-* [`nodeclasses`](#nodeclasses)
-* [`ssh_private_key_path`](#ssh_private_key_path)
 * [`script_tgt_fn`](#script_tgt_fn)
-* [`mmsdrfs`](#mmsdrfs)
-
-##### <a name="master_server"></a>`master_server`
-
-Data type: `String[1]`
-
-FQDN of gpfs master server
-
-##### <a name="ssh_private_key_contents"></a>`ssh_private_key_contents`
-
-Data type: `String[1]`
-
-private ssh key contents to enable ssh into master_server
-
-##### <a name="ssh_public_key_contents"></a>`ssh_public_key_contents`
-
-Data type: `String[1]`
-
-public ssh key contents to enable ssh into master_server
+* [`ssh_private_key_contents`](#ssh_private_key_contents)
+* [`ssh_private_key_path`](#ssh_private_key_path)
+* [`ssh_public_key_contents`](#ssh_public_key_contents)
+* [`ssh_public_key_type`](#ssh_public_key_type)
 
 ##### <a name="interface"></a>`interface`
 
@@ -102,6 +86,24 @@ Data type: `String`
 
 OPTIONAL - Name of network interface whose IP will be used to register with GPFS.
 If undefined with add with default (accoring to Puppet) IP address.
+
+##### <a name="master_server"></a>`master_server`
+
+Data type: `String[1]`
+
+FQDN of gpfs master server
+
+##### <a name="mmsdrfs"></a>`mmsdrfs`
+
+Data type: `String[1]`
+
+OPTIONAL - path to mmsdrfs command default set in module hiera
+
+##### <a name="nodeclasses"></a>`nodeclasses`
+
+Data type: `Array`
+
+OPTIONAL - list of nodeclasses to which this node should be added master_server
 
 ##### <a name="pagepool"></a>`pagepool`
 
@@ -117,11 +119,17 @@ Data type: `Integer`
 OPTIONAL - Max percent of RAM allowed for gpfs pagepool.
 Must be an integer between 10 and 90.
 
-##### <a name="nodeclasses"></a>`nodeclasses`
+##### <a name="script_tgt_fn"></a>`script_tgt_fn`
 
-Data type: `Array`
+Data type: `String[1]`
 
-OPTIONAL - list of nodeclasses to which this node should be added master_server
+OPTIONAL - where to store the "add_client" bash script default set in module hiera
+
+##### <a name="ssh_private_key_contents"></a>`ssh_private_key_contents`
+
+Data type: `String[1]`
+
+private ssh key contents to enable ssh into master_server
 
 ##### <a name="ssh_private_key_path"></a>`ssh_private_key_path`
 
@@ -129,17 +137,17 @@ Data type: `String[1]`
 
 OPTIONAL - path to store the gpfs private key (default set in module hiera)
 
-##### <a name="script_tgt_fn"></a>`script_tgt_fn`
+##### <a name="ssh_public_key_contents"></a>`ssh_public_key_contents`
 
 Data type: `String[1]`
 
-OPTIONAL - where to store the "add_client" bash script default set in module hiera
+public ssh key contents to enable ssh into master_server
 
-##### <a name="mmsdrfs"></a>`mmsdrfs`
+##### <a name="ssh_public_key_type"></a>`ssh_public_key_type`
 
 Data type: `String[1]`
 
-OPTIONAL - path to mmsdrfs command default set in module hiera
+public ssh key type, e.g. 'rsa'
 
 ### <a name="gpfsbindmounts"></a>`gpfs::bindmounts`
 
@@ -210,6 +218,79 @@ Data type: `Array[String[1], 1]`
 
 Allow incoming traffic from these sources on GPFS specific tcp
 ports.
+
+### <a name="gpfshealth"></a>`gpfs::health`
+
+Congifure GPFS Health Checks Via Telegraf
+
+#### Examples
+
+##### 
+
+```puppet
+include gpfs::health
+```
+
+#### Parameters
+
+The following parameters are available in the `gpfs::health` class:
+
+* [`enabled`](#enabled)
+* [`file_base_name`](#file_base_name)
+* [`telegraf_cfg`](#telegraf_cfg)
+* [`telegraf_script_cfg_fs`](#telegraf_script_cfg_fs)
+* [`telegraf_script_cfg_paths`](#telegraf_script_cfg_paths)
+* [`telegraf_script_cfg_files`](#telegraf_script_cfg_files)
+* [`telegraf_script_cfg_filestat`](#telegraf_script_cfg_filestat)
+
+##### <a name="enabled"></a>`enabled`
+
+Data type: `Boolean`
+
+Enable or disable this health check
+
+##### <a name="file_base_name"></a>`file_base_name`
+
+Data type: `String`
+
+Basename of files used by the health check
+
+##### <a name="telegraf_cfg"></a>`telegraf_cfg`
+
+Data type: `Hash`
+
+Hash of key:value pairs passed to telegraf::input as options
+
+##### <a name="telegraf_script_cfg_fs"></a>`telegraf_script_cfg_fs`
+
+Data type: `String`
+
+Optional GPFS filesystems parameter.
+This is a space separated list of file system device names according to gpfs.
+If empty will lookup from `gpfs::nativemounts::mountmap` paramter.
+
+##### <a name="telegraf_script_cfg_paths"></a>`telegraf_script_cfg_paths`
+
+Data type: `String`
+
+Optional GPFS paths parameter.
+This is a space separated list of paths that the ls check should run on.
+If empty will lookup from `gpfs::bindmounts::mountmap` paramter.
+
+##### <a name="telegraf_script_cfg_files"></a>`telegraf_script_cfg_files`
+
+Data type: `String`
+
+Optional GPFS files parameter.
+This is a space separated list of files the stat check should run on.
+If empty will lookup paths from `gpfs::nativemounts::mountmap` paramter and
+use files from `telegraf_script_cfg_filestat` paramter.
+
+##### <a name="telegraf_script_cfg_filestat"></a>`telegraf_script_cfg_filestat`
+
+Data type: `String`
+
+Filename (or directory) to stat for file health checks
 
 ### <a name="gpfsinstall"></a>`gpfs::install`
 
