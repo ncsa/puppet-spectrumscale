@@ -14,6 +14,17 @@ gpfs::add_client::ssh_private_key_path: "/root/.ssh/id_gpfs"
 gpfs::add_client::ssh_public_key_type: "rsa"
 gpfs::add_client::script_tgt_fn: "/root/gpfs_add_client.sh"
 gpfs::cron::accept_license: false
+gpfs::health::enabled: false
+gpfs::health::file_base_name: "gpfs_client_health"
+gpfs::health::telegraf_cfg:
+  data_format: "influx"
+  interval: "1m"
+  timeout: "30s"
+gpfs::health::telegraf_script_cfg_fs: ""
+gpfs::health::telegraf_script_cfg_paths: ""
+gpfs::health::telegraf_script_cfg_files: ""
+gpfs::health::telegraf_script_cfg_filestat: ".snapshots"
+
 gpfs::resource_defaults:
   cron:
     user: "root"

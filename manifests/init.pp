@@ -23,5 +23,6 @@ class gpfs (
   include gpfs::cron
   include gpfs::nativemounts
   include gpfs::bindmounts
+  include gpfs::health
 
 }

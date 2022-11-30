@@ -1,0 +1,18 @@
+<%- | $fs,
+      $paths,
+      $files,
+| -%>
+# This file is managed by Puppet - Changes may be overwritten
+#
+# GPFS Telegraf Config
+#
+# Example [ Description]
+#
+# fs="user dac admin offline" [ comman separated list of file system device names according to gpfs ]
+# paths="/user/staff/home /dac/services /admin /offline" [ paths that the ls check should run on ]
+# files="/user/.SETcheck /dac/.SETcheck /admin/.SETcheck /offline/.SETcheck" [ files the stat check should run on ]
+
+readonly fs="<%= $fs %>"
+readonly paths="<%= $paths %>"
+readonly files="<%= $files %>"
+
