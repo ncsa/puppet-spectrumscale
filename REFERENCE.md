@@ -379,12 +379,19 @@ Start GPFS and wait for verification that it started successfully
 The following parameters are available in the `gpfs::startup` class:
 
 * [`cmds`](#cmds)
+* [`no_gpfs_file`](#no_gpfs_file)
 
 ##### <a name="cmds"></a>`cmds`
 
 Data type: `Hash[String[1], String[1], 2, 2]`
 
 OPTIONAL - default values set in module hiera
+
+##### <a name="no_gpfs_file"></a>`no_gpfs_file`
+
+Data type: `String`
+
+File path of lock file to prevent GPFS from starting
 
 ## Defined types
 

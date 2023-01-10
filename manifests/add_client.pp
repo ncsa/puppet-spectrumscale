@@ -109,6 +109,7 @@ class gpfs::add_client (
       'gpfs_add_client':
         command => "${script_tgt_fn} ${master_server}",
         creates => $mmsdrfs,
+        onlyif  => "/usr/bin/test ! -e ${gpfs::startup::no_gpfs_file}",
         require => [
           File[ $script_tgt_fn ],
           Class[ 'gpfs' ],
