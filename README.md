@@ -180,6 +180,7 @@ See also: The file `manifests/templates/myquota.epp`
 
 - ncsa/profile_sudo
 - ncsa/sshd
+- saz/sudo
 
 ## Reference
 
