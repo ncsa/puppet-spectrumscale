@@ -7,23 +7,23 @@
 ### Classes
 
 * [`gpfs`](#gpfs): NCSA Spectrum Scale Puppet Module (formerly GPFS)    @summary   This module will install the latest version of GPFS for the specified   yum r
-* [`gpfs::add_client`](#gpfsadd_client): Add this node to the gpfs cluster
-* [`gpfs::bindmounts`](#gpfsbindmounts): Create bindmounts as specified in Hiera
-* [`gpfs::cron`](#gpfscron): Install cron jobs for:    - Exempt gpfs from linux kernel OOM killer    - (OPTIONAL) accept license for all nodes in cluster  Parameters:
-* [`gpfs::firewall`](#gpfsfirewall)
-* [`gpfs::health`](#gpfshealth): Congifure GPFS Health Checks Via Telegraf
-* [`gpfs::install`](#gpfsinstall): Manage a gpfs yum repo (optional) & Install GPFS
-* [`gpfs::nativemounts`](#gpfsnativemounts): Mount all specified GPFS filesystems
-* [`gpfs::quota`](#gpfsquota): Override native gpfs quota command with a script that will
+* [`gpfs::add_client`](#gpfs--add_client): Add this node to the gpfs cluster
+* [`gpfs::bindmounts`](#gpfs--bindmounts): Create bindmounts as specified in Hiera
+* [`gpfs::cron`](#gpfs--cron): Install cron jobs for:    - Exempt gpfs from linux kernel OOM killer    - (OPTIONAL) accept license for all nodes in cluster  Parameters:
+* [`gpfs::firewall`](#gpfs--firewall)
+* [`gpfs::health`](#gpfs--health): Congifure GPFS Health Checks Via Telegraf
+* [`gpfs::install`](#gpfs--install): Manage a gpfs yum repo (optional) & Install GPFS
+* [`gpfs::nativemounts`](#gpfs--nativemounts): Mount all specified GPFS filesystems
+* [`gpfs::quota`](#gpfs--quota): Override native gpfs quota command with a script that will
 invoke a custom quota command on the gpfs server specified by
 $host on $port.
-* [`gpfs::startup`](#gpfsstartup): Start GPFS and wait for verification that it started successfully
+* [`gpfs::startup`](#gpfs--startup): Start GPFS and wait for verification that it started successfully
 
 ### Defined types
 
-* [`gpfs::bindmount`](#gpfsbindmount): Defined type, not intended to be invoked directly, but rather via
+* [`gpfs::bindmount`](#gpfs--bindmount): Defined type, not intended to be invoked directly, but rather via
 gpfs::bindmounts. The name of the resource is the target mountpath.
-* [`gpfs::nativemount`](#gpfsnativemount): Create mount options file, populated with specified options
+* [`gpfs::nativemount`](#gpfs--nativemount): Create mount options file, populated with specified options
 Ensure parent (mountpoint) directory exists
 Ensure the filesystem is mounted
 Name: gpfs filesystem name
@@ -52,15 +52,15 @@ include gpfs
 
 The following parameters are available in the `gpfs` class:
 
-* [`resource_defaults`](#resource_defaults)
+* [`resource_defaults`](#-gpfs--resource_defaults)
 
-##### <a name="resource_defaults"></a>`resource_defaults`
+##### <a name="-gpfs--resource_defaults"></a>`resource_defaults`
 
 Data type: `Hash[String[1], Hash[String[1], Data, 1], 1]`
 
 OPTIONAL - default values set in module hiera
 
-### <a name="gpfsadd_client"></a>`gpfs::add_client`
+### <a name="gpfs--add_client"></a>`gpfs::add_client`
 
 Add this node to the gpfs cluster
 
@@ -68,88 +68,88 @@ Add this node to the gpfs cluster
 
 The following parameters are available in the `gpfs::add_client` class:
 
-* [`interface`](#interface)
-* [`master_server`](#master_server)
-* [`mmsdrfs`](#mmsdrfs)
-* [`nodeclasses`](#nodeclasses)
-* [`pagepool`](#pagepool)
-* [`pagepool_max_ram_percent`](#pagepool_max_ram_percent)
-* [`script_tgt_fn`](#script_tgt_fn)
-* [`ssh_private_key_contents`](#ssh_private_key_contents)
-* [`ssh_private_key_path`](#ssh_private_key_path)
-* [`ssh_public_key_contents`](#ssh_public_key_contents)
-* [`ssh_public_key_type`](#ssh_public_key_type)
+* [`interface`](#-gpfs--add_client--interface)
+* [`master_server`](#-gpfs--add_client--master_server)
+* [`mmsdrfs`](#-gpfs--add_client--mmsdrfs)
+* [`nodeclasses`](#-gpfs--add_client--nodeclasses)
+* [`pagepool`](#-gpfs--add_client--pagepool)
+* [`pagepool_max_ram_percent`](#-gpfs--add_client--pagepool_max_ram_percent)
+* [`script_tgt_fn`](#-gpfs--add_client--script_tgt_fn)
+* [`ssh_private_key_contents`](#-gpfs--add_client--ssh_private_key_contents)
+* [`ssh_private_key_path`](#-gpfs--add_client--ssh_private_key_path)
+* [`ssh_public_key_contents`](#-gpfs--add_client--ssh_public_key_contents)
+* [`ssh_public_key_type`](#-gpfs--add_client--ssh_public_key_type)
 
-##### <a name="interface"></a>`interface`
+##### <a name="-gpfs--add_client--interface"></a>`interface`
 
 Data type: `String`
 
 OPTIONAL - Name of network interface whose IP will be used to register with GPFS.
 If undefined with add with default (accoring to Puppet) IP address.
 
-##### <a name="master_server"></a>`master_server`
+##### <a name="-gpfs--add_client--master_server"></a>`master_server`
 
 Data type: `String[1]`
 
 FQDN of gpfs master server
 
-##### <a name="mmsdrfs"></a>`mmsdrfs`
+##### <a name="-gpfs--add_client--mmsdrfs"></a>`mmsdrfs`
 
 Data type: `String[1]`
 
 OPTIONAL - path to mmsdrfs command default set in module hiera
 
-##### <a name="nodeclasses"></a>`nodeclasses`
+##### <a name="-gpfs--add_client--nodeclasses"></a>`nodeclasses`
 
 Data type: `Array`
 
 OPTIONAL - list of nodeclasses to which this node should be added master_server
 
-##### <a name="pagepool"></a>`pagepool`
+##### <a name="-gpfs--add_client--pagepool"></a>`pagepool`
 
 Data type: `String`
 
 OPTIONAL - Amount of RAM to dedicate to gpfs pagepool.
 Format: integer number followed by one of K, M, or G.
 
-##### <a name="pagepool_max_ram_percent"></a>`pagepool_max_ram_percent`
+##### <a name="-gpfs--add_client--pagepool_max_ram_percent"></a>`pagepool_max_ram_percent`
 
 Data type: `Integer`
 
 OPTIONAL - Max percent of RAM allowed for gpfs pagepool.
 Must be an integer between 10 and 90.
 
-##### <a name="script_tgt_fn"></a>`script_tgt_fn`
+##### <a name="-gpfs--add_client--script_tgt_fn"></a>`script_tgt_fn`
 
 Data type: `String[1]`
 
 OPTIONAL - where to store the "add_client" bash script default set in module hiera
 
-##### <a name="ssh_private_key_contents"></a>`ssh_private_key_contents`
+##### <a name="-gpfs--add_client--ssh_private_key_contents"></a>`ssh_private_key_contents`
 
 Data type: `String[1]`
 
 private ssh key contents to enable ssh into master_server
 
-##### <a name="ssh_private_key_path"></a>`ssh_private_key_path`
+##### <a name="-gpfs--add_client--ssh_private_key_path"></a>`ssh_private_key_path`
 
 Data type: `String[1]`
 
 OPTIONAL - path to store the gpfs private key (default set in module hiera)
 
-##### <a name="ssh_public_key_contents"></a>`ssh_public_key_contents`
+##### <a name="-gpfs--add_client--ssh_public_key_contents"></a>`ssh_public_key_contents`
 
 Data type: `String[1]`
 
 public ssh key contents to enable ssh into master_server
 
-##### <a name="ssh_public_key_type"></a>`ssh_public_key_type`
+##### <a name="-gpfs--add_client--ssh_public_key_type"></a>`ssh_public_key_type`
 
 Data type: `String[1]`
 
 public ssh key type, e.g. 'rsa'
 
-### <a name="gpfsbindmounts"></a>`gpfs::bindmounts`
+### <a name="gpfs--bindmounts"></a>`gpfs::bindmounts`
 
 Create bindmounts as specified in Hiera
 
@@ -166,9 +166,9 @@ in hiera, the list of bindmounts and associated data.
 
 The following parameters are available in the `gpfs::bindmounts` class:
 
-* [`mountmap`](#mountmap)
+* [`mountmap`](#-gpfs--bindmounts--mountmap)
 
-##### <a name="mountmap"></a>`mountmap`
+##### <a name="-gpfs--bindmounts--mountmap"></a>`mountmap`
 
 Data type: `Hash`
 
@@ -182,7 +182,7 @@ gpfs::bindmounts::mountmap:
 
 Default value: `{}`
 
-### <a name="gpfscron"></a>`gpfs::cron`
+### <a name="gpfs--cron"></a>`gpfs::cron`
 
 Install cron jobs for:
    - Exempt gpfs from linux kernel OOM killer
@@ -194,15 +194,15 @@ Parameters:
 
 The following parameters are available in the `gpfs::cron` class:
 
-* [`accept_license`](#accept_license)
+* [`accept_license`](#-gpfs--cron--accept_license)
 
-##### <a name="accept_license"></a>`accept_license`
+##### <a name="-gpfs--cron--accept_license"></a>`accept_license`
 
 Data type: `Boolean`
 
 Install cron script to auto accept license
 
-### <a name="gpfsfirewall"></a>`gpfs::firewall`
+### <a name="gpfs--firewall"></a>`gpfs::firewall`
 
 The gpfs::firewall class.
 
@@ -210,16 +210,16 @@ The gpfs::firewall class.
 
 The following parameters are available in the `gpfs::firewall` class:
 
-* [`allow_from`](#allow_from)
+* [`allow_from`](#-gpfs--firewall--allow_from)
 
-##### <a name="allow_from"></a>`allow_from`
+##### <a name="-gpfs--firewall--allow_from"></a>`allow_from`
 
 Data type: `Array[String[1], 1]`
 
 Allow incoming traffic from these sources on GPFS specific tcp
 ports.
 
-### <a name="gpfshealth"></a>`gpfs::health`
+### <a name="gpfs--health"></a>`gpfs::health`
 
 Congifure GPFS Health Checks Via Telegraf
 
@@ -235,33 +235,35 @@ include gpfs::health
 
 The following parameters are available in the `gpfs::health` class:
 
-* [`enabled`](#enabled)
-* [`file_base_name`](#file_base_name)
-* [`telegraf_cfg`](#telegraf_cfg)
-* [`telegraf_script_cfg_fs`](#telegraf_script_cfg_fs)
-* [`telegraf_script_cfg_paths`](#telegraf_script_cfg_paths)
-* [`telegraf_script_cfg_files`](#telegraf_script_cfg_files)
-* [`telegraf_script_cfg_filestat`](#telegraf_script_cfg_filestat)
+* [`enabled`](#-gpfs--health--enabled)
+* [`file_base_name`](#-gpfs--health--file_base_name)
+* [`telegraf_cfg`](#-gpfs--health--telegraf_cfg)
+* [`telegraf_script_cfg_fs`](#-gpfs--health--telegraf_script_cfg_fs)
+* [`telegraf_script_cfg_paths`](#-gpfs--health--telegraf_script_cfg_paths)
+* [`telegraf_script_cfg_files`](#-gpfs--health--telegraf_script_cfg_files)
+* [`telegraf_script_cfg_filestat`](#-gpfs--health--telegraf_script_cfg_filestat)
+* [`telegraf_ss_client_health`](#-gpfs--health--telegraf_ss_client_health)
+* [`sudo_cfg`](#-gpfs--health--sudo_cfg)
 
-##### <a name="enabled"></a>`enabled`
+##### <a name="-gpfs--health--enabled"></a>`enabled`
 
 Data type: `Boolean`
 
 Enable or disable this health check
 
-##### <a name="file_base_name"></a>`file_base_name`
+##### <a name="-gpfs--health--file_base_name"></a>`file_base_name`
 
 Data type: `String`
 
 Basename of files used by the health check
 
-##### <a name="telegraf_cfg"></a>`telegraf_cfg`
+##### <a name="-gpfs--health--telegraf_cfg"></a>`telegraf_cfg`
 
 Data type: `Hash`
 
 Hash of key:value pairs passed to telegraf::input as options
 
-##### <a name="telegraf_script_cfg_fs"></a>`telegraf_script_cfg_fs`
+##### <a name="-gpfs--health--telegraf_script_cfg_fs"></a>`telegraf_script_cfg_fs`
 
 Data type: `String`
 
@@ -269,7 +271,7 @@ Optional GPFS filesystems parameter.
 This is a space separated list of file system device names according to gpfs.
 If empty will lookup from `gpfs::nativemounts::mountmap` paramter.
 
-##### <a name="telegraf_script_cfg_paths"></a>`telegraf_script_cfg_paths`
+##### <a name="-gpfs--health--telegraf_script_cfg_paths"></a>`telegraf_script_cfg_paths`
 
 Data type: `String`
 
@@ -277,7 +279,7 @@ Optional GPFS paths parameter.
 This is a space separated list of paths that the ls check should run on.
 If empty will lookup from `gpfs::bindmounts::mountmap` paramter.
 
-##### <a name="telegraf_script_cfg_files"></a>`telegraf_script_cfg_files`
+##### <a name="-gpfs--health--telegraf_script_cfg_files"></a>`telegraf_script_cfg_files`
 
 Data type: `String`
 
@@ -286,13 +288,23 @@ This is a space separated list of files the stat check should run on.
 If empty will lookup paths from `gpfs::nativemounts::mountmap` paramter and
 use files from `telegraf_script_cfg_filestat` paramter.
 
-##### <a name="telegraf_script_cfg_filestat"></a>`telegraf_script_cfg_filestat`
+##### <a name="-gpfs--health--telegraf_script_cfg_filestat"></a>`telegraf_script_cfg_filestat`
 
 Data type: `String`
 
 Filename (or directory) to stat for file health checks
 
-### <a name="gpfsinstall"></a>`gpfs::install`
+##### <a name="-gpfs--health--telegraf_ss_client_health"></a>`telegraf_ss_client_health`
+
+Specifies the sudo command for telegraf to run the mmdiag command on the host
+
+##### <a name="-gpfs--health--sudo_cfg"></a>`sudo_cfg`
+
+Data type: `String`
+
+
+
+### <a name="gpfs--install"></a>`gpfs::install`
 
 Manage a gpfs yum repo (optional) & Install GPFS
 
@@ -300,23 +312,23 @@ Manage a gpfs yum repo (optional) & Install GPFS
 
 The following parameters are available in the `gpfs::install` class:
 
-* [`yumrepo`](#yumrepo)
-* [`pkg_list`](#pkg_list)
+* [`yumrepo`](#-gpfs--install--yumrepo)
+* [`pkg_list`](#-gpfs--install--pkg_list)
 
-##### <a name="yumrepo"></a>`yumrepo`
+##### <a name="-gpfs--install--yumrepo"></a>`yumrepo`
 
 Data type: `Hash`
 
 Hash of yumrepo parameters in form of yumrepo parameters
 
-##### <a name="pkg_list"></a>`pkg_list`
+##### <a name="-gpfs--install--pkg_list"></a>`pkg_list`
 
 Data type: `Array[String[1], 1]`
 
 OPTIONAL - List of dependent OS packages to install. Default value defined
 in module hiera.
 
-### <a name="gpfsnativemounts"></a>`gpfs::nativemounts`
+### <a name="gpfs--nativemounts"></a>`gpfs::nativemounts`
 
 Mount all specified GPFS filesystems
 
@@ -333,9 +345,9 @@ specify, in hiera, which filesystems to mount
 
 The following parameters are available in the `gpfs::nativemounts` class:
 
-* [`mountmap`](#mountmap)
+* [`mountmap`](#-gpfs--nativemounts--mountmap)
 
-##### <a name="mountmap"></a>`mountmap`
+##### <a name="-gpfs--nativemounts--mountmap"></a>`mountmap`
 
 Data type: `Hash`
 
@@ -347,7 +359,7 @@ gpfs::nativemounts::mountmap:
 
 Default value: `{}`
 
-### <a name="gpfsquota"></a>`gpfs::quota`
+### <a name="gpfs--quota"></a>`gpfs::quota`
 
 NCSA custom quota command
 
@@ -355,22 +367,22 @@ NCSA custom quota command
 
 The following parameters are available in the `gpfs::quota` class:
 
-* [`host`](#host)
-* [`port`](#port)
+* [`host`](#-gpfs--quota--host)
+* [`port`](#-gpfs--quota--port)
 
-##### <a name="host"></a>`host`
+##### <a name="-gpfs--quota--host"></a>`host`
 
 Data type: `String[1]`
 
 Host that should be used for custom quota command.
 
-##### <a name="port"></a>`port`
+##### <a name="-gpfs--quota--port"></a>`port`
 
 Data type: `Integer[1, 65535]`
 
 Port on the custom quota host.
 
-### <a name="gpfsstartup"></a>`gpfs::startup`
+### <a name="gpfs--startup"></a>`gpfs::startup`
 
 Start GPFS and wait for verification that it started successfully
 
@@ -378,16 +390,16 @@ Start GPFS and wait for verification that it started successfully
 
 The following parameters are available in the `gpfs::startup` class:
 
-* [`cmds`](#cmds)
-* [`no_gpfs_file`](#no_gpfs_file)
+* [`cmds`](#-gpfs--startup--cmds)
+* [`no_gpfs_file`](#-gpfs--startup--no_gpfs_file)
 
-##### <a name="cmds"></a>`cmds`
+##### <a name="-gpfs--startup--cmds"></a>`cmds`
 
 Data type: `Hash[String[1], String[1], 2, 2]`
 
 OPTIONAL - default values set in module hiera
 
-##### <a name="no_gpfs_file"></a>`no_gpfs_file`
+##### <a name="-gpfs--startup--no_gpfs_file"></a>`no_gpfs_file`
 
 Data type: `String`
 
@@ -395,7 +407,7 @@ File path of lock file to prevent GPFS from starting
 
 ## Defined types
 
-### <a name="gpfsbindmount"></a>`gpfs::bindmount`
+### <a name="gpfs--bindmount"></a>`gpfs::bindmount`
 
 Create a bindmount
 
@@ -403,25 +415,25 @@ Create a bindmount
 
 The following parameters are available in the `gpfs::bindmount` defined type:
 
-* [`src_path`](#src_path)
-* [`src_mountpoint`](#src_mountpoint)
-* [`opts`](#opts)
+* [`src_path`](#-gpfs--bindmount--src_path)
+* [`src_mountpoint`](#-gpfs--bindmount--src_mountpoint)
+* [`opts`](#-gpfs--bindmount--opts)
 
-##### <a name="src_path"></a>`src_path`
+##### <a name="-gpfs--bindmount--src_path"></a>`src_path`
 
 Data type: `String[1]`
 
 The source of this bindmount (ie: the directory this bindmount will point
 to).
 
-##### <a name="src_mountpoint"></a>`src_mountpoint`
+##### <a name="-gpfs--bindmount--src_mountpoint"></a>`src_mountpoint`
 
 Data type: `String[1]`
 
 The mountpath of the gpfs filesystem that this bindmount depends
 on
 
-##### <a name="opts"></a>`opts`
+##### <a name="-gpfs--bindmount--opts"></a>`opts`
 
 Data type: `String`
 
@@ -429,7 +441,7 @@ Comma separated list of mount options.
 
 Default value: `''`
 
-### <a name="gpfsnativemount"></a>`gpfs::nativemount`
+### <a name="gpfs--nativemount"></a>`gpfs::nativemount`
 
 Represent a native gpfs filesystem mount
 
@@ -450,10 +462,10 @@ gpfs::nativemount { 'data':
 
 The following parameters are available in the `gpfs::nativemount` defined type:
 
-* [`opts`](#opts)
-* [`mountpoint`](#mountpoint)
+* [`opts`](#-gpfs--nativemount--opts)
+* [`mountpoint`](#-gpfs--nativemount--mountpoint)
 
-##### <a name="opts"></a>`opts`
+##### <a name="-gpfs--nativemount--opts"></a>`opts`
 
 Data type: `Any`
 
@@ -463,7 +475,7 @@ options (cannot be overridden).
 
 Default value: `''`
 
-##### <a name="mountpoint"></a>`mountpoint`
+##### <a name="-gpfs--nativemount--mountpoint"></a>`mountpoint`
 
 Data type: `Any`
 

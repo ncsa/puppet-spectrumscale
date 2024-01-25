@@ -24,6 +24,11 @@ gpfs::health::telegraf_script_cfg_fs: ""
 gpfs::health::telegraf_script_cfg_paths: ""
 gpfs::health::telegraf_script_cfg_files: ""
 gpfs::health::telegraf_script_cfg_filestat: ".snapshots"
+gpfs::health::sudo_cfg: |
+  Defaults:telegraf !mail_always
+  Defaults:telegraf !requiretty
+  telegraf ALL = NOPASSWD: NOMAIL: /usr/lpp/mmfs/bin/mmdiag *
+
 
 gpfs::resource_defaults:
   cron:

@@ -28,11 +28,15 @@
 # @param telegraf_script_cfg_filestat
 #   Filename (or directory) to stat for file health checks
 #
+# @param telegraf_ss_client_health
+#  Specifies the sudo command for telegraf to run the mmdiag command on the host
+#
 # @example
 #   include gpfs::health
 class gpfs::health (
   Boolean $enabled,
   String $file_base_name,
+  String $sudo_cfg,
   Hash   $telegraf_cfg,
   String $telegraf_script_cfg_fs,
   String $telegraf_script_cfg_paths,
@@ -122,4 +126,11 @@ class gpfs::health (
     require     => File[$script_full_path],
   }
 
+  # Sudo config specific for this profile
+  #
+  sudo::conf { 'telegraf_ss_client_health':
+    ensure   => $ensure_parm,
+    priority => 10,
+    content  => $sudo_cfg,
+  }
 }
