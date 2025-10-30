@@ -85,7 +85,7 @@ if [ -d /usr/lpp/mmfs/bin ]; then
       proc_check=1
     fi
     mpoint=$(grep gpfs /etc/fstab | grep -v bind | grep ${f} | awk '{print $2}')
-    stat=$(stat ${mpoint}/.SETcheck)
+    stat=$(timeout 20s stat ${mpoint}/.SETcheck)
     if [ -n "$stat" ]; then
       #We can stat a file
       stat_check=0

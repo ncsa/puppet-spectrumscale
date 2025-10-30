@@ -18,9 +18,7 @@
 class gpfs::bindmounts (
   Hash $mountmap = {},
 ) {
-
   $mountmap.each | $k, $v | {
-    gpfs::bindmount{ $k: * => $v }
+    gpfs::bindmount { $k: * => $v }
   }
-
 }

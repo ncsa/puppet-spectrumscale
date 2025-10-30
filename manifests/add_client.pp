@@ -49,7 +49,6 @@ class gpfs::add_client (
   String[1] $ssh_public_key_contents,
   String[1] $ssh_public_key_type,
 ) {
-
   include gpfs::startup
 
   # AUTHORIZE SSH FROM GPFS MASTER
@@ -70,8 +69,7 @@ class gpfs::add_client (
   }
 
   # SKIP ADD CLIENT IF NODE IS ALREADY PART OF A GPFS CLUSTER
-  if ! $facts['is_gpfs_member_node']
-  {
+  if ! $facts['is_gpfs_member_node'] {
     # GET IP OF GPFS INTERFACE
     if ( ! empty( $interface ) ) {
       $gpfs_ip_address = $facts['networking']['interfaces'][$interface]['ip']
@@ -87,21 +85,21 @@ class gpfs::add_client (
         group   => root,
         mode    => '0700',
         content => epp('gpfs/add_client.epp', {
-          'hostname'                 => $facts['hostname'],
-          'gpfs_master'              => $master_server,
-          'ipaddress'                => $gpfs_ip_address,
-          'nodeclasses'              => $nodeclasses,
-          'pagepool'                 => $pagepool,
-          'pagepool_max_ram_percent' => $pagepool_max_ram_percent,
-          'script_fn'                => $script_tgt_fn,
-          'ssh_private_key_contents' => $ssh_private_key_contents,
-          'ssh_private_key_path'     => $ssh_private_key_path,
+            'hostname'                 => $facts['hostname'],
+            'gpfs_master'              => $master_server,
+            'ipaddress'                => $gpfs_ip_address,
+            'nodeclasses'              => $nodeclasses,
+            'pagepool'                 => $pagepool,
+            'pagepool_max_ram_percent' => $pagepool_max_ram_percent,
+            'script_fn'                => $script_tgt_fn,
+            'ssh_private_key_contents' => $ssh_private_key_contents,
+            'ssh_private_key_path'     => $ssh_private_key_path,
           }
         ),
-      ;
+        ;
       default:
         * => $gpfs::resource_defaults['file']
-      ;
+        ;
     }
 
     # EXECUTE ADD CLIENT SCRIPT
@@ -111,39 +109,38 @@ class gpfs::add_client (
         creates => $mmsdrfs,
         onlyif  => "/usr/bin/test ! -e ${gpfs::startup::no_gpfs_file}",
         require => [
-          File[ $script_tgt_fn ],
-          Class[ 'gpfs' ],
-          Ssh_authorized_key[ 'gpfs_master_authorized_key' ],
-          Firewall[  '100 ssh from gpfs master' ],
+          File[$script_tgt_fn],
+          Class['gpfs'],
+          Ssh_authorized_key['gpfs_master_authorized_key'],
+          Firewall['100 ssh from gpfs master'],
         ],
         notify  => [
-          Class[ 'gpfs::startup' ],
-          Exec[ 'rm_gpfs_add_client_sh' ],
-          File[ $ssh_private_key_path ],
+          Class['gpfs::startup'],
+          Exec['rm_gpfs_add_client_sh'],
+          File[$ssh_private_key_path],
         ],
-      ;
+        ;
       'rm_gpfs_add_client_sh':
         command => "/bin/rm -f ${script_tgt_fn}",
         require => [
-          File[ $script_tgt_fn ],
-          Exec[ 'gpfs_add_client' ],
+          File[$script_tgt_fn],
+          Exec['gpfs_add_client'],
         ]
-      ;
+        ;
       default:
         * => $gpfs::resource_defaults['exec']
-      ;
+        ;
     }
   }
-  else
-  {
+  else {
     exec {
       'rm_gpfs_add_client_sh':
         command => "/bin/rm -f ${script_tgt_fn}",
         onlyif  => "test -f ${script_tgt_fn}",
-      ;
+        ;
       default:
         * => $gpfs::resource_defaults['exec']
-      ;
+        ;
     }
   }
 
@@ -154,5 +151,4 @@ class gpfs::add_client (
   file { $ssh_private_key_path:
     ensure => absent,
   }
-
 }
