@@ -10,7 +10,6 @@
 class gpfs::cron (
   Boolean $accept_license,
 ) {
-
   # CRON FILE LOCATIONS
   $root_cron       = '/root/cron'
   $fn_gpfs_oom     = "${root_cron}/gpfs_oom.sh"
@@ -33,10 +32,10 @@ class gpfs::cron (
     $fn_gpfs_oom :
       source => "puppet:///modules/gpfs${fn_gpfs_oom}",
       mode   => '0700',
-    ;
+      ;
     default:
       * => $gpfs::resource_defaults['file']
-    ;
+      ;
   }
   cron {
     'gpfs_oom' :
@@ -44,10 +43,10 @@ class gpfs::cron (
       command => $fn_gpfs_oom,
       hour    => 0,
       minute  => 2,
-    ;
+      ;
     default:
       * => $gpfs::resource_defaults['cron']
-    ;
+      ;
   }
 
   # CHECK & ACCEPT LICENSE FEATURE IS OPTIONAL
@@ -62,10 +61,10 @@ class gpfs::cron (
       ensure => $license_ensure,
       source => "puppet:///modules/gpfs${fn_gpfs_license}",
       mode   => '0700',
-    ;
+      ;
     default:
       * => $gpfs::resource_defaults['file']
-    ;
+      ;
   }
   cron {
     'gpfs_license' :
@@ -73,9 +72,9 @@ class gpfs::cron (
       command => $fn_gpfs_license,
       hour    => 0,
       minute  => 1,
-    ;
+      ;
     default:
       * => $gpfs::resource_defaults['cron']
-    ;
+      ;
   }
 }

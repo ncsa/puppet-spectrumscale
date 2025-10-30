@@ -23,18 +23,18 @@
 #       opts='ro,nosuid',
 #       mountpoint='/data' }
 #   }
-define gpfs::nativemount(
+define gpfs::nativemount (
   $opts = '',
   $mountpoint = '',
 ) {
-
   # Resource defaults
   $dir_defaults = merge(
     $gpfs::resource_defaults['file'],
-    { 'ensure' => 'directory',
+    {
+      'ensure' => 'directory',
       'mode'   => '0755',
     }
-  ).delete( [ 'mode', 'group', 'owner' ] )
+  ).delete(['mode', 'group', 'owner'])
 
   # Build mount options string
   $defaultopts = 'noauto'
@@ -50,7 +50,7 @@ define gpfs::nativemount(
   file {
     $optfile :
       content => $optstr,
-    ;
+      ;
     default: * => $gpfs::resource_defaults['file']
     ;
   }
@@ -67,7 +67,7 @@ define gpfs::nativemount(
   $dirparts = reject( split( $mpath, '/' ), '^$' )
   $numparts = size( $dirparts )
   if ( $numparts > 1 ) {
-    each( Integer[2,$numparts] ) |$i| {
+    each(Integer[2,$numparts]) |$i| {
       ensure_resource(
         'file',
         reduce( Integer[2,$i], $mpath ) |$memo, $val| { dirname( $memo ) },
@@ -79,7 +79,7 @@ define gpfs::nativemount(
   # Ensure mountpath dir exists
   file {
     $mpath:
-    ;
+      ;
     default: * => $dir_defaults
     ;
   }
@@ -95,18 +95,17 @@ define gpfs::nativemount(
     $fstab_update_cmdname:
       command => 'mmrefresh -f',
       unless  => "awk -- '${awk}' /etc/fstab"
-    ;
+      ;
     # mount (if needed)
     "mmmount ${mpath}":
       creates => "${mpath}/.MOUNTED",
       require => [
-        Class[ 'gpfs::startup' ],
-        File[ $mpath, $optfile ],
-        Exec[ $fstab_update_cmdname ],
+        Class['gpfs::startup'],
+        File[$mpath, $optfile],
+        Exec[$fstab_update_cmdname],
       ],
-    ;
+      ;
     default: * => $gpfs::resource_defaults['exec']
     ;
   }
-
 }

@@ -12,12 +12,10 @@
 #       lsst:
 #           opts: ro
 #
-class gpfs::nativemounts(
+class gpfs::nativemounts (
   Hash $mountmap = {},
 ) {
-
   $mountmap.each | $k, $v | {
-    gpfs::nativemount{ $k: * => $v }
+    gpfs::nativemount { $k: * => $v }
   }
-
 }

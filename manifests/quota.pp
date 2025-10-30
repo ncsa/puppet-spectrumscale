@@ -17,7 +17,6 @@ class gpfs::quota (
   String[1]         $host,
   Integer[1, 65535] $port,
 ) {
-
   $myquota = '/usr/local/bin/myquota'
   $symlinks = ['/usr/local/bin/mmlsquota', '/usr/local/bin/mmrepquota']
 
@@ -25,11 +24,11 @@ class gpfs::quota (
     $symlinks:
       ensure => link,
       target => $myquota,
-    ;
+      ;
     $myquota :
       content => epp( 'gpfs/myquota.epp', {
-        'host' => $host,
-        'port' => $port,
+          'host' => $host,
+          'port' => $port,
         }
       ),
       mode    => '0755',
@@ -38,5 +37,4 @@ class gpfs::quota (
       * => $gpfs::resource_defaults['file']
       ;
   }
-
 }

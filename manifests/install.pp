@@ -12,7 +12,6 @@ class gpfs::install (
   Hash                $yumrepo,
   Array[String[1], 1] $pkg_list,
 ) {
-
   # INSTALL THE YUM REPO (if provided)
   if ( ! empty($yumrepo) ) {
     yumrepo { 'gpfs':
@@ -29,11 +28,11 @@ class gpfs::install (
   $fn_gpfs_profile = '/etc/profile.d/gpfs.sh'
   file {
     $fn_gpfs_profile:
-      source   => "puppet:///modules/gpfs/${fn_gpfs_profile}",
-    ;
+      source => "puppet:///modules/gpfs/${fn_gpfs_profile}",
+      ;
     default:
       * => $gpfs::resource_defaults['file']
-    ;
+      ;
   }
 
   # INSTALL DEPENDENT OS PACKAGES
@@ -45,6 +44,5 @@ class gpfs::install (
   # gpfs rpm upgrade will fail while gpfs is running and this module is not
   # built to shutdown gpfs first (nor is a random gpfs shutdown a useful
   # action.)
-  ensure_packages( $pkg_list, {'ensure' => 'present'} )
-
+  ensure_packages($pkg_list, { 'ensure' => 'present' })
 }

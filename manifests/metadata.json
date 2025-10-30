@@ -16,10 +16,10 @@
     {
       "operatingsystem":"CentOS",
       "operatingsystemrelease":[ "6.x", "7.x" ]
-    },
+    }
   ],
   "dependencies": [
-    { "name": "puppetlabs-stdlib", },
-    { "name": "puppetlabs-firewall", },
-  ],
+    { "name": "puppetlabs-stdlib"},
+    { "name": "puppetlabs-firewall"}
+  ]
 }

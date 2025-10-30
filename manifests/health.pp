@@ -53,10 +53,8 @@ class gpfs::health (
         Service['telegraf'],
       ],
     }
-
     include profile_monitoring::telegraf
     include ::telegraf
-
   } else {
     File {
       ensure => 'absent',
@@ -94,12 +92,12 @@ class gpfs::health (
     $paths = $telegraf_script_cfg_paths
   }
   if empty($telegraf_script_cfg_files) {
-    $files = lookup('gpfs::nativemounts::mountmap', Hash) .map |$key, $value|
-      { "${value['mountpoint']}/${telegraf_script_cfg_filestat}" } .join(' ')
+    $files = lookup('gpfs::nativemounts::mountmap', Hash) .map |$key, $value| {
+      "${value['mountpoint']}/${telegraf_script_cfg_filestat}"
+    }.join(' ')
   } else {
     $files = $telegraf_script_cfg_files
   }
-
   $config_parameters = {
     fs    => $fs,
     paths => $paths,
@@ -113,16 +111,14 @@ class gpfs::health (
   file { $script_full_path :
     source  => "puppet:///modules/${module_name}/telegraf/gpfs_client_health.sh",
     mode    => '0750',
-    require => [
-      File[$script_cfg_full_path],
-    ],
+    require => File[$script_cfg_full_path],
   }
 
   # Setup telegraf config
   $telegraf_cfg_final = $telegraf_cfg + { 'command' => $script_full_path }
   telegraf::input { $file_base_name :
     plugin_type => 'exec',
-    options     => [ $telegraf_cfg_final ],
+    options     => [$telegraf_cfg_final],
     require     => File[$script_full_path],
   }
 
